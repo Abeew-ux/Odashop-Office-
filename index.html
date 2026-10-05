@@ -196,7 +196,7 @@ function vProducts(){
 }
 function productSheet(id){
   const p=id?S.products.find(x=>x.id==id):{name:"",price:"",section:"neuf",category:"",stock:1,description:"",image_url:"",active:true};
-  let active=p.active,img=p.image_url;
+  let active=p.active,img=p.image_url,fid=p.telegram_file_id||null;
   sheet(`<h3>${id?"Modifier":"Nouveau"} produit</h3>
   <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px"></div></div></div>
   <label>Nom</label><input class="fld" id="n" value="${esc(p.name)}">
@@ -210,15 +210,19 @@ function productSheet(id){
   $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
   $("#pick").onclick=()=>$("#fi").click();
   $("#fi").onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi…";
-    const ext=(f.name.split(".").pop()||"jpg").toLowerCase();const path=`${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
-    const {error}=await sb.storage.from("products").upload(path,f,{contentType:f.type});
-    if(error){$("#up").textContent="Erreur : "+error.message;return}
-    img=sb.storage.from("products").getPublicUrl(path).data.publicUrl;
-    $("#pv").innerHTML=`<img src="${img}">`;$("#up").textContent="Photo ajoutée ✓";
+    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const fd=new FormData();fd.append("file",f);
+      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
+      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
+      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓";
+    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
   };
   $("#sv").onclick=async()=>{
-    const row={name:$("#n").value.trim(),price:+$("#pr").value||0,section:$("#se").value,category:$("#ca").value.trim()||"Divers",stock:+$("#sk").value||0,description:$("#de").value.trim(),image_url:img||null,active};
+    const row={name:$("#n").value.trim(),price:+$("#pr").value||0,section:$("#se").value,category:$("#ca").value.trim()||"Divers",stock:+$("#sk").value||0,description:$("#de").value.trim(),image_url:img||null,telegram_file_id:fid,active};
     if(!row.name)return toast("Entrez un nom");
     const q=id?sb.from("products").update(row).eq("id",id):sb.from("products").insert(row);
     if(await run(q,"Produit enregistré")){closeSheet();refresh()}
@@ -297,7 +301,7 @@ function vSet(){
   ${S.cities.map(c=>`<div class="card row" style="${c.active?"":"opacity:.5"}"><div class="sp"><b>${esc(c.name)}</b><br><small>Frais : ${money(c.delivery_fee)}</small></div><button class="sm o" data-c="${c.id}">Modifier</button></div>`).join("")}
   <button class="btn o" id="ac">+ Ajouter une ville</button>
   <h2>Telegram</h2>
-  <div class="card"><b>Photos et alertes</b><p class="mut" style="margin-top:4px">Connexion du bot Telegram (alertes de commande dans ton groupe) : en cours de configuration.</p></div>
+  <div class="card"><b>Photos et alertes</b><p class="mut" style="margin-top:4px">Les photos des produits sont stockées sur Telegram. Les nouvelles commandes et les messages clients sont envoyés sur Telegram.</p></div>
   <h2>Compte</h2>
   <div class="card"><b>${esc(S.email)}</b>
    <label>Nouveau mot de passe</label><input class="fld" id="np" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
