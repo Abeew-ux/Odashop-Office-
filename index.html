@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#09090a">
+<title>ODA Shop Office</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#09090a;--card:#141416;--card2:#1b1b1e;--line:#2a2a2e;--txt:#f6f4ee;--mut:#9b9a93;--g:#e8b23a;--g2:#b8821a;--ok:#22c55e;--bad:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#000;color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+#app{max-width:520px;margin:auto;min-height:100vh;background:var(--bg);padding-bottom:90px;position:relative}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select,textarea{font:inherit}
+header{position:sticky;top:0;z-index:20;background:rgba(9,9,10,.9);backdrop-filter:blur(14px);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--g2));color:#111;font-weight:900;font-size:9px;line-height:1;display:grid;place-items:center;text-align:center}
+header b{font-size:16px}header small{display:block;color:var(--g);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+header .sp{flex:1}
+.ib{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--g);color:var(--g);display:grid;place-items:center;font-size:16px}
+main{padding:14px 16px}
+h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin:18px 0 10px;font-weight:700}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.top h1{font-size:22px;letter-spacing:-.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:12px}
+.sp{flex:1}
+small,.mut{color:var(--mut);font-size:12.5px}
+.btn{display:block;width:100%;background:var(--g);color:#111;font-weight:800;border-radius:14px;padding:13px;text-align:center;font-size:15px;margin-top:12px;text-decoration:none}
+.btn.o{background:none;border:1.5px solid var(--g);color:var(--g)}
+.btn.d{background:none;border:1.5px solid var(--bad);color:var(--bad)}
+.sm{background:var(--g);color:#111;font-weight:700;font-size:12px;border-radius:10px;padding:8px 12px;text-decoration:none;white-space:nowrap}
+.sm.o{background:none;border:1px solid var(--line);color:var(--txt)}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;color:var(--mut)}
+.chip.on{border-color:var(--g);color:var(--g);background:#e8b23a14}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#e8b23a22;color:var(--g)}
+.badge.livree{background:#22c55e22;color:var(--ok)}.badge.annulee{background:#ef444422;color:var(--bad)}
+.thumb{width:56px;height:56px;border-radius:14px;background:var(--card2);display:grid;place-items:center;font-size:24px;overflow:hidden;flex-shrink:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.price{color:var(--g);font-weight:800}
+.fld{width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--txt);font-size:15px;margin-top:8px;outline:0}
+.fld:focus{border-color:var(--g)}
+label{display:block;font-size:12px;color:var(--mut);margin-top:12px}
+.sw{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.tg{width:46px;height:26px;border-radius:99px;background:#333;position:relative;transition:.2s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.tg.on{background:var(--g)}.tg.on::after{left:23px}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;background:rgba(16,16,18,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 4px 12px;z-index:30}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--mut);padding:5px 0;position:relative}
+nav button i{font-style:normal;font-size:21px}
+nav button.on{color:var(--g)}
+nav button.on::before{content:"";position:absolute;top:-9px;width:26px;height:3px;border-radius:3px;background:var(--g)}
+nav .dot{position:absolute;top:0;right:22%;background:var(--bad);color:#fff;border-radius:99px;font-size:10px;min-width:17px;height:17px;display:grid;place-items:center;padding:0 4px;font-weight:700}
+#ov{position:fixed;inset:0;background:#000a;z-index:50;opacity:0;pointer-events:none;transition:.25s}
+#ov.show{opacity:1;pointer-events:auto}
+#sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);width:100%;max-width:520px;max-height:90vh;overflow:auto;background:#121214;border-radius:26px 26px 0 0;border:1px solid var(--line);padding:10px 18px 28px;z-index:60;transition:.3s}
+#sheet.show{transform:translate(-50%,0)}
+.grab{width:42px;height:4px;border-radius:4px;background:#3a3a40;margin:4px auto 14px}
+#sheet h3{font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:70;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.login{max-width:420px;margin:auto;padding:70px 24px;text-align:center}
+.login .logo{width:70px;height:70px;font-size:15px;margin:0 auto 18px;border-radius:20px}
+.login h1{font-size:26px;letter-spacing:-.6px}.login h1 span{color:var(--g)}
+.err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+.bub{max-width:80%;padding:10px 14px;border-radius:18px;font-size:14px;margin-bottom:8px;white-space:pre-wrap}
+.bub.me{margin-left:auto;background:var(--g);color:#111;border-bottom-right-radius:4px}
+.bub.ot{background:var(--card2);border-bottom-left-radius:4px}
+.empty{text-align:center;color:var(--mut);padding:40px 0;font-size:14px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-size:20px;color:var(--g)}.stat small{font-size:11px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ov"></div><div id="sheet"></div><div class="toast" id="toast"></div>
+<script>
+const SB_URL="https://zssyuerclbjydkuooukk.supabase.co";
+const SB_KEY="sb_publishable_8JxMf66gzM7B9idXFtTSEg_ddXevxEf";
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=n=>Number(n||0).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ")+" F";
+const STAT={nouvelle:"Nouvelle",confirmee:"Confirmée",en_livraison:"En livraison",livree:"Livrée",annulee:"Annulée"};
+let S={tab:"orders",orders:[],products:[],messages:[],services:[],items:[],cities:[],settings:{},ofilter:"all",pfilter:"all",thread:null,unread:0};
+
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
+function sheet(h){$("#sheet").innerHTML='<div class="grab"></div>'+h;$("#ov").classList.add("show");$("#sheet").classList.add("show")}
+function closeSheet(){$("#ov").classList.remove("show");$("#sheet").classList.remove("show")}
+$("#ov").onclick=closeSheet;
+async function run(p,okmsg){const {error}=await p;if(error){toast("Erreur : "+error.message);return false}if(okmsg)toast(okmsg);return true}
+
+/* ---------- Connexion ---------- */
+function loginView(msg=""){
+  $("#app").innerHTML=`<div class="login"><div class="logo">ODA<br>SHOP</div><h1>ODA Shop <span>Office</span></h1><p class="mut" style="margin:6px 0 22px">Espace de gestion</p>
+  <input class="fld" id="em" type="email" placeholder="Email" autocomplete="username">
+  <input class="fld" id="pw" type="password" placeholder="Mot de passe" autocomplete="current-password">
+  <button class="btn" id="go">Se connecter</button><div class="err" id="er">${esc(msg)}</div></div>`;
+  const go=async()=>{
+    $("#er").textContent="";$("#go").textContent="Connexion…";
+    const {data,error}=await sb.auth.signInWithPassword({email:$("#em").value.trim(),password:$("#pw").value});
+    $("#go").textContent="Se connecter";
+    if(error){$("#er").textContent="Email ou mot de passe incorrect.";return}
+    start();
+  };
+  $("#go").onclick=go;$("#pw").onkeydown=e=>{if(e.key=="Enter")go()};
+}
+async function start(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session)return loginView();
+  const {data}=await sb.from("admins").select("user_id").eq("user_id",session.user.id);
+  if(!data||!data.length){await sb.auth.signOut();return loginView("Ce compte n'a pas accès au Office.")}
+  S.email=session.user.email;
+  shell();await loadAll();render();
+  clearInterval(window._t);window._t=setInterval(()=>{if(!$("#sheet.show"))refresh()},30000);
+}
+
+/* ---------- Données ---------- */
+async function loadAll(){
+  const [o,p,m,s,i,c,st]=await Promise.all([
+    sb.from("orders").select("*").order("created_at",{ascending:false}).limit(200),
+    sb.from("products").select("*").order("created_at",{ascending:false}),
+    sb.from("messages").select("*").order("created_at",{ascending:true}).limit(1000),
+    sb.from("services").select("*").order("sort_order"),
+    sb.from("service_items").select("*").order("sort_order"),
+    sb.from("cities").select("*").order("sort_order"),
+    sb.from("settings").select("*")]);
+  S.orders=o.data||[];S.products=p.data||[];S.messages=m.data||[];S.services=s.data||[];S.items=i.data||[];S.cities=c.data||[];
+  S.settings=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));
+  S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;
+}
+async function refresh(){await loadAll();render()}
+
+/* ---------- Structure ---------- */
+function shell(){
+  $("#app").innerHTML=`<header><div class="logo">ODA<br>SHOP</div><div><small>Office</small><b>ODA Shop</b></div><div class="sp"></div><button class="ib" id="rf" aria-label="Actualiser">⟳</button></header>
+  <main id="view"></main>
+  <nav id="nav">
+   <button data-t="orders"><i>🧾</i>Commandes</button>
+   <button data-t="products"><i>🛍️</i>Produits</button>
+   <button data-t="msgs"><i>💬</i>Messages</button>
+   <button data-t="svc"><i>🧰</i>Services</button>
+   <button data-t="set"><i>⚙️</i>Réglages</button>
+  </nav>`;
+  $("#rf").onclick=async()=>{await refresh();toast("Actualisé")};
+  document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;S.thread=null;render();scrollTo(0,0)});
+}
+function render(){
+  document.querySelectorAll("#nav button").forEach(b=>{b.classList.toggle("on",b.dataset.t==S.tab);const d=b.querySelector(".dot");if(d)d.remove()});
+  const nb=S.orders.filter(o=>o.status=="nouvelle").length;
+  const add=(t,n)=>{if(n>0){const b=document.querySelector(`#nav [data-t=${t}]`);b.insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)}};
+  add("orders",nb);add("msgs",S.unread);
+  ({orders:vOrders,products:vProducts,msgs:vMsgs,svc:vSvc,set:vSet})[S.tab]();
+}
+
+/* ---------- Commandes ---------- */
+function vOrders(){
+  const today=new Date().toDateString();
+  const td=S.orders.filter(o=>new Date(o.created_at).toDateString()==today);
+  const list=S.orders.filter(o=>S.ofilter=="all"||o.status==S.ofilter);
+  $("#view").innerHTML=`<div class="top"><h1>Commandes</h1></div>
+  <div class="stat"><div><b>${S.orders.filter(o=>o.status=="nouvelle").length}</b><small>Nouvelles</small></div><div><b>${td.length}</b><small>Aujourd'hui</small></div><div><b>${money(td.filter(o=>o.status!="annulee").reduce((a,o)=>a+o.total,0)).replace(" F","")}</b><small>F du jour</small></div></div>
+  <div class="chips">${["all",...Object.keys(STAT)].map(k=>`<button class="chip ${S.ofilter==k?"on":""}" data-f="${k}">${k=="all"?"Toutes":STAT[k]}</button>`).join("")}</div>
+  ${list.length?list.map(o=>`<div class="card" data-o="${o.id}"><div class="row"><b>#${o.id} · ${esc(o.customer_name)}</b><span class="sp"></span><span class="badge ${o.status}">${STAT[o.status]}</span></div>
+   <small>${new Date(o.created_at).toLocaleString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})} · ${esc(o.city)} · ${esc(o.kind)}</small>
+   <div class="row" style="margin-top:6px"><span class="mut sp">${(o.items||[]).length} article(s)</span><span class="price">${money(o.total)}</span></div></div>`).join(""):'<div class="empty">Aucune commande pour le moment.</div>'}`;
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.ofilter=b.dataset.f;vOrders()});
+  document.querySelectorAll("[data-o]").forEach(c=>c.onclick=()=>orderSheet(+c.dataset.o));
+}
+function orderSheet(id){
+  const o=S.orders.find(x=>x.id==id);if(!o)return;
+  const ph=(o.customer_phone||"").replace(/\D/g,"");
+  sheet(`<h3>Commande #${o.id}</h3><p class="mut">${esc(o.customer_name)} · ${esc(o.city)}${o.address?" · "+esc(o.address):""}</p>
+  ${(o.items||[]).map(i=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><span class="sp">${esc(i.n||i.name)}</span><span class="price">${esc(i.p||i.price||"")}</span></div>`).join("")}
+  <div class="row" style="margin-top:12px"><b class="sp">Total</b><span class="price">${money(o.total)}</span></div>
+  ${o.note?`<p class="mut" style="margin-top:8px">Note : ${esc(o.note)}</p>`:""}
+  <label>Statut</label><select class="fld" id="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${o.status==k?"selected":""}>${v}</option>`).join("")}</select>
+  <button class="btn" id="sv">Enregistrer</button>
+  ${ph?`<div class="row" style="margin-top:10px;gap:8px"><a class="btn o" style="margin:0" href="tel:+${ph}">Appeler</a><a class="btn o" style="margin:0" target="_blank" rel="noopener" href="https://wa.me/${ph}">WhatsApp</a></div>`:""}`);
+  $("#sv").onclick=async()=>{if(await run(sb.from("orders").update({status:$("#st").value}).eq("id",id),"Statut mis à jour")){closeSheet();refresh()}};
+}
+
+/* ---------- Produits ---------- */
+function vProducts(){
+  const cats=["all",...new Set(S.products.map(p=>p.section))];
+  const list=S.products.filter(p=>S.pfilter=="all"||p.section==S.pfilter);
+  $("#view").innerHTML=`<div class="top"><h1>Produits</h1><button class="sm" id="np">+ Ajouter</button></div>
+  <div class="chips">${[["all","Tous"],["neuf","Boutique neuve"],["occasion","Occasion"]].map(([k,v])=>`<button class="chip ${S.pfilter==k?"on":""}" data-f="${k}">${v}</button>`).join("")}</div>
+  ${list.length?list.map(p=>`<div class="card row" data-p="${p.id}" style="${p.active?"":"opacity:.5"}"><div class="thumb">${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:"📦"}</div><div class="sp"><b>${esc(p.name)}</b><br><small>${p.section=="neuf"?"Neuf":"Occasion"} · ${esc(p.category)} · stock ${p.stock}</small></div><span class="price">${money(p.price)}</span></div>`).join(""):'<div class="empty">Aucun produit. Appuie sur « + Ajouter ».</div>'}`;
+  $("#np").onclick=()=>productSheet();
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.pfilter=b.dataset.f;vProducts()});
+  document.querySelectorAll("[data-p]").forEach(c=>c.onclick=()=>productSheet(c.dataset.p));
+}
+function productSheet(id){
+  const p=id?S.products.find(x=>x.id==id):{name:"",price:"",section:"neuf",category:"",stock:1,description:"",image_url:"",active:true};
+  let active=p.active,img=p.image_url;
+  sheet(`<h3>${id?"Modifier":"Nouveau"} produit</h3>
+  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px"></div></div></div>
+  <label>Nom</label><input class="fld" id="n" value="${esc(p.name)}">
+  <label>Prix (F)</label><input class="fld" id="pr" type="number" inputmode="numeric" value="${p.price}">
+  <label>Section</label><select class="fld" id="se"><option value="neuf" ${p.section=="neuf"?"selected":""}>Boutique neuve</option><option value="occasion" ${p.section=="occasion"?"selected":""}>Marché occasion</option></select>
+  <label>Catégorie</label><input class="fld" id="ca" list="cl" value="${esc(p.category)}" placeholder="Téléphones, Meubles…"><datalist id="cl">${[...new Set(["Téléphones","Ordinateurs","Meubles","Électroménager","Véhicules","Vêtements",...S.products.map(x=>x.category)])].map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+  <label>Stock</label><input class="fld" id="sk" type="number" inputmode="numeric" value="${p.stock}">
+  <label>Description</label><textarea class="fld" id="de" rows="3">${esc(p.description||"")}</textarea>
+  <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
+  <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
+  $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
+  $("#pick").onclick=()=>$("#fi").click();
+  $("#fi").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi…";
+    const ext=(f.name.split(".").pop()||"jpg").toLowerCase();const path=`${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+    const {error}=await sb.storage.from("products").upload(path,f,{contentType:f.type});
+    if(error){$("#up").textContent="Erreur : "+error.message;return}
+    img=sb.storage.from("products").getPublicUrl(path).data.publicUrl;
+    $("#pv").innerHTML=`<img src="${img}">`;$("#up").textContent="Photo ajoutée ✓";
+  };
+  $("#sv").onclick=async()=>{
+    const row={name:$("#n").value.trim(),price:+$("#pr").value||0,section:$("#se").value,category:$("#ca").value.trim()||"Divers",stock:+$("#sk").value||0,description:$("#de").value.trim(),image_url:img||null,active};
+    if(!row.name)return toast("Entrez un nom");
+    const q=id?sb.from("products").update(row).eq("id",id):sb.from("products").insert(row);
+    if(await run(q,"Produit enregistré")){closeSheet();refresh()}
+  };
+  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer ce produit ?")&&await run(sb.from("products").delete().eq("id",id),"Supprimé")){closeSheet();refresh()}};
+}
+
+/* ---------- Messages ---------- */
+function threads(){
+  const m=new Map();
+  S.messages.forEach(x=>{const k=x.customer_id||x.customer_phone||x.customer_name||"?";if(!m.has(k))m.set(k,{k,name:x.customer_name||x.customer_phone||"Client",phone:x.customer_phone,cid:x.customer_id,msgs:[]});m.get(k).msgs.push(x)});
+  return [...m.values()].sort((a,b)=>new Date(b.msgs.at(-1).created_at)-new Date(a.msgs.at(-1).created_at));
+}
+function vMsgs(){
+  if(S.thread)return threadView();
+  const t=threads();
+  $("#view").innerHTML=`<div class="top"><h1>Messages</h1></div>`+(t.length?t.map(x=>{const last=x.msgs.at(-1),un=x.msgs.filter(y=>y.sender=="client"&&!y.is_read).length;
+   return `<div class="card row" data-k="${esc(x.k)}"><div class="thumb" style="border-radius:50%">👤</div><div class="sp"><b>${esc(x.name)}</b><br><small>${esc(last.body.slice(0,50))}</small></div>${un?`<span class="badge" style="background:var(--g);color:#111">${un}</span>`:""}</div>`}).join(""):'<div class="empty">Aucun message pour le moment.</div>');
+  document.querySelectorAll("[data-k]").forEach(c=>c.onclick=()=>{S.thread=c.dataset.k;vMsgs()});
+}
+async function threadView(){
+  const th=threads().find(x=>String(x.k)==S.thread);if(!th){S.thread=null;return vMsgs()}
+  $("#view").innerHTML=`<div class="top"><button class="sm o" id="bk">‹ Retour</button><b>${esc(th.name)}</b><span></span></div>
+  <div>${th.msgs.map(x=>`<div class="bub ${x.sender=="admin"?"me":"ot"}">${esc(x.body)}</div>`).join("")}</div>
+  <div class="row" style="margin-top:12px;gap:8px"><input class="fld" id="mb" style="margin:0" placeholder="Votre réponse…"><button class="sm" id="sd" style="padding:13px 16px">Envoyer</button></div>`;
+  $("#bk").onclick=()=>{S.thread=null;vMsgs()};
+  $("#sd").onclick=async()=>{const b=$("#mb").value.trim();if(!b)return;
+    if(await run(sb.from("messages").insert({customer_id:th.cid,customer_name:th.name,customer_phone:th.phone,sender:"admin",body:b,is_read:true}))){await refresh()}};
+  const ids=th.msgs.filter(x=>x.sender=="client"&&!x.is_read).map(x=>x.id);
+  if(ids.length){await sb.from("messages").update({is_read:true}).in("id",ids);ids.forEach(i=>{S.messages.find(m=>m.id==i).is_read=true});S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;render_badges()}
+}
+function render_badges(){document.querySelectorAll("#nav .dot").forEach(d=>d.remove());const nb=S.orders.filter(o=>o.status=="nouvelle").length;const add=(t,n)=>{if(n>0)document.querySelector(`#nav [data-t=${t}]`).insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)};add("orders",nb);add("msgs",S.unread)}
+
+/* ---------- Services ---------- */
+function vSvc(){
+  $("#view").innerHTML=`<div class="top"><h1>Services</h1></div><p class="mut" style="margin-bottom:12px">Pharmacie, immobilier, transport, travaux, colis, nourriture.</p>`+
+  S.services.map(s=>`<div class="card row" data-s="${s.id}" style="${s.active?"":"opacity:.5"}"><div class="thumb" style="background:var(--g)">${esc(s.icon||"🧰")}</div><div class="sp"><b>${esc(s.title)}</b><br><small>${S.items.filter(i=>i.service_id==s.id).length} élément(s)</small></div><span class="mut">›</span></div>`).join("");
+  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>serviceSheet(+c.dataset.s));
+}
+function serviceSheet(id){
+  const s=S.services.find(x=>x.id==id);let active=s.active;
+  const its=S.items.filter(i=>i.service_id==id);
+  sheet(`<h3>${esc(s.icon||"")} ${esc(s.title)}</h3>
+  <label>Titre</label><input class="fld" id="t" value="${esc(s.title)}">
+  <label>Description</label><input class="fld" id="d" value="${esc(s.subtitle||"")}">
+  <label>Icône (emoji)</label><input class="fld" id="ic" value="${esc(s.icon||"")}">
+  <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
+  <button class="btn" id="sv">Enregistrer le service</button>
+  <h2>Éléments proposés</h2>
+  ${its.map(i=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="sp"><b>${esc(i.name)}</b><br><small>${esc(i.description||"")}</small></div><button class="sm o" data-e="${i.id}">Modifier</button></div>`).join("")||'<p class="mut">Aucun élément.</p>'}
+  <button class="btn o" id="ai">+ Ajouter un élément</button>`);
+  $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
+  $("#sv").onclick=async()=>{if(await run(sb.from("services").update({title:$("#t").value.trim(),subtitle:$("#d").value.trim(),icon:$("#ic").value.trim(),active}).eq("id",id),"Service enregistré")){closeSheet();refresh()}};
+  $("#ai").onclick=()=>itemSheet(id);
+  document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>itemSheet(id,+b.dataset.e));
+}
+function itemSheet(sid,iid){
+  const i=iid?S.items.find(x=>x.id==iid):{name:"",description:""};
+  sheet(`<h3>${iid?"Modifier":"Nouvel"} élément</h3>
+  <label>Nom</label><input class="fld" id="n" value="${esc(i.name)}"><label>Description</label><input class="fld" id="d" value="${esc(i.description||"")}">
+  <button class="btn" id="sv">Enregistrer</button>${iid?'<button class="btn d" id="dl">Supprimer</button>':""}<button class="btn o" id="bk">Retour</button>`);
+  $("#bk").onclick=()=>serviceSheet(sid);
+  $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),description:$("#d").value.trim(),service_id:sid};if(!r.name)return toast("Entrez un nom");
+    if(await run(iid?sb.from("service_items").update(r).eq("id",iid):sb.from("service_items").insert(r),"Enregistré")){await loadAll();serviceSheet(sid)}};
+  if(iid)$("#dl").onclick=async()=>{if(confirm("Supprimer ?")&&await run(sb.from("service_items").delete().eq("id",iid),"Supprimé")){await loadAll();serviceSheet(sid)}};
+}
+
+/* ---------- Réglages ---------- */
+function vSet(){
+  $("#view").innerHTML=`<div class="top"><h1>Réglages</h1></div>
+  <div class="card"><b>Boutique</b>
+   <label>Numéro WhatsApp (format international, sans +)</label><input class="fld" id="wa" inputmode="tel" placeholder="227XXXXXXXX" value="${esc(S.settings.whatsapp_number||"")}">
+   <label>Titre de l'accueil</label><input class="fld" id="ht" value="${esc(S.settings.hero_title||"")}">
+   <button class="btn" id="ss">Enregistrer</button></div>
+  <h2>Villes de livraison</h2>
+  ${S.cities.map(c=>`<div class="card row" style="${c.active?"":"opacity:.5"}"><div class="sp"><b>${esc(c.name)}</b><br><small>Frais : ${money(c.delivery_fee)}</small></div><button class="sm o" data-c="${c.id}">Modifier</button></div>`).join("")}
+  <button class="btn o" id="ac">+ Ajouter une ville</button>
+  <h2>Telegram</h2>
+  <div class="card"><b>Photos et alertes</b><p class="mut" style="margin-top:4px">Connexion du bot Telegram (alertes de commande dans ton groupe) : en cours de configuration.</p></div>
+  <h2>Compte</h2>
+  <div class="card"><b>${esc(S.email)}</b>
+   <label>Nouveau mot de passe</label><input class="fld" id="np" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
+   <button class="btn o" id="cp">Changer le mot de passe</button></div>
+  <button class="btn d" id="lo">Se déconnecter</button>`;
+  $("#ss").onclick=async()=>{
+    const ok=await run(sb.from("settings").upsert([{key:"whatsapp_number",value:$("#wa").value.replace(/\D/g,""),is_public:true},{key:"hero_title",value:$("#ht").value.trim(),is_public:true}]),"Réglages enregistrés");if(ok)refresh()};
+  $("#cp").onclick=async()=>{const v=$("#np").value;if(v.length<8)return toast("8 caractères minimum");if(await run(sb.auth.updateUser({password:v}),"Mot de passe changé"))$("#np").value=""};
+  $("#lo").onclick=async()=>{clearInterval(window._t);await sb.auth.signOut();loginView()};
+  $("#ac").onclick=()=>citySheet();
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>citySheet(+b.dataset.c));
+}
+function citySheet(id){
+  const c=id?S.cities.find(x=>x.id==id):{name:"",delivery_fee:0,active:true};let active=c.active;
+  sheet(`<h3>${id?"Modifier":"Nouvelle"} ville</h3><label>Nom</label><input class="fld" id="n" value="${esc(c.name)}">
+  <label>Frais de livraison (F)</label><input class="fld" id="f" type="number" inputmode="numeric" value="${c.delivery_fee}">
+  <div class="sw"><span>Active</span><div class="tg ${active?"on":""}" id="ac2"></div></div>
+  <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
+  $("#ac2").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
+  $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),delivery_fee:+$("#f").value||0,active};if(!r.name)return toast("Entrez un nom");
+    if(await run(id?sb.from("cities").update(r).eq("id",id):sb.from("cities").insert(r),"Ville enregistrée")){closeSheet();refresh()}};
+  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer cette ville ?")&&await run(sb.from("cities").delete().eq("id",id),"Supprimée")){closeSheet();refresh()}};
+}
+
+start();
+</script>
+</body>
+</html>
