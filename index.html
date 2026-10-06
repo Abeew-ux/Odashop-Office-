@@ -80,7 +80,7 @@ nav .dot{position:absolute;top:0;right:22%;background:var(--bad);color:#fff;bord
 <script>
 const SB_URL="https://zssyuerclbjydkuooukk.supabase.co";
 const SB_KEY="sb_publishable_8JxMf66gzM7B9idXFtTSEg_ddXevxEf";
-const sb=supabase.createClient(SB_URL,SB_KEY);
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"oda-office-auth",persistSession:true,autoRefreshToken:true}});
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ")+" F";
@@ -120,14 +120,18 @@ async function start(){
 
 /* ---------- Données ---------- */
 async function loadAll(){
-  const [o,p,m,s,i,c,st]=await Promise.all([
+  const [o,p,m,s,i,c,st,sh,cu,bn]=await Promise.all([
     sb.from("orders").select("*").order("created_at",{ascending:false}).limit(200),
     sb.from("products").select("*").order("created_at",{ascending:false}),
     sb.from("messages").select("*").order("created_at",{ascending:true}).limit(1000),
     sb.from("services").select("*").order("sort_order"),
     sb.from("service_items").select("*").order("sort_order"),
     sb.from("cities").select("*").order("sort_order"),
-    sb.from("settings").select("*")]);
+    sb.from("settings").select("*"),
+    sb.from("shops").select("*").order("created_at",{ascending:false}),
+    sb.from("customers").select("id,name,phone"),
+    sb.from("banners").select("*").order("sort_order")]);
+  S.shops=sh.data||[];S.customers=cu.data||[];S.banners=bn.data||[];
   S.orders=o.data||[];S.products=p.data||[];S.messages=m.data||[];S.services=s.data||[];S.items=i.data||[];S.cities=c.data||[];
   S.settings=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));
   S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;
@@ -141,6 +145,7 @@ function shell(){
   <nav id="nav">
    <button data-t="orders"><i>🧾</i>Commandes</button>
    <button data-t="products"><i>🛍️</i>Produits</button>
+   <button data-t="shops"><i>🏪</i>Boutiques</button>
    <button data-t="msgs"><i>💬</i>Messages</button>
    <button data-t="svc"><i>🧰</i>Services</button>
    <button data-t="set"><i>⚙️</i>Réglages</button>
@@ -152,8 +157,8 @@ function render(){
   document.querySelectorAll("#nav button").forEach(b=>{b.classList.toggle("on",b.dataset.t==S.tab);const d=b.querySelector(".dot");if(d)d.remove()});
   const nb=S.orders.filter(o=>o.status=="nouvelle").length;
   const add=(t,n)=>{if(n>0){const b=document.querySelector(`#nav [data-t=${t}]`);b.insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)}};
-  add("orders",nb);add("msgs",S.unread);
-  ({orders:vOrders,products:vProducts,msgs:vMsgs,svc:vSvc,set:vSet})[S.tab]();
+  add("orders",nb);add("msgs",S.unread);add("shops",pend());
+  ({orders:vOrders,products:vProducts,shops:vShops,banners:vBanners,msgs:vMsgs,svc:vSvc,set:vSet})[S.tab]();
 }
 
 /* ---------- Commandes ---------- */
@@ -183,13 +188,51 @@ function orderSheet(id){
   $("#sv").onclick=async()=>{if(await run(sb.from("orders").update({status:$("#st").value}).eq("id",id),"Statut mis à jour")){closeSheet();refresh()}};
 }
 
+/* ---------- Boutiques (vendeurs) ---------- */
+const SH={en_attente:"En attente",approuvee:"Approuvée",refusee:"Refusée",suspendue:"Suspendue"};
+const shopName=id=>{const s=(S.shops||[]).find(x=>x.id==id);return s?s.name:""};
+const pend=()=>(S.shops||[]).filter(s=>s.status=="en_attente").length+(S.products||[]).filter(p=>p.status=="en_attente").length;
+function vShops(){
+  const f=S.sfilter||"all";
+  const list=S.shops.filter(s=>f=="all"||s.status==f);
+  const pp=S.products.filter(p=>p.status=="en_attente");
+  $("#view").innerHTML=`<div class="top"><h1>Boutiques</h1></div>
+  ${pp.length?`<div class="card" id="pp" style="border-color:var(--g);cursor:pointer"><b>⏳ ${pp.length} produit(s) à valider</b><br><small>Appuie pour les voir</small></div>`:""}
+  <div class="chips">${["all",...Object.keys(SH)].map(k=>`<button class="chip ${f==k?"on":""}" data-f="${k}">${k=="all"?"Toutes":SH[k]}${k=="en_attente"&&S.shops.some(s=>s.status=="en_attente")?" ("+S.shops.filter(s=>s.status=="en_attente").length+")":""}</button>`).join("")}</div>
+  ${list.length?list.map(s=>{const ow=S.customers.find(c=>c.id==s.owner_id)||{};return `<div class="card row" data-s="${s.id}"><div class="thumb">🏪</div><div class="sp"><b>${esc(s.name)}</b><br><small>${esc(ow.name||"?")} · ${esc(s.city)} · ${S.products.filter(p=>p.shop_id==s.id).length} produit(s)</small></div><span class="badge ${s.status=="approuvee"?"livree":(s.status=="refusee"||s.status=="suspendue")?"annulee":""}">${SH[s.status]}</span></div>`}).join(""):'<div class="empty">Aucune boutique pour le moment.</div>'}`;
+  if($("#pp"))$("#pp").onclick=()=>{S.tab="products";S.pfilter="pending";render()};
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.sfilter=b.dataset.f;vShops()});
+  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>shopSheet(c.dataset.s));
+}
+function shopSheet(id){
+  const s=S.shops.find(x=>x.id==id);if(!s)return;
+  const ow=S.customers.find(c=>c.id==s.owner_id)||{};
+  const ph=String(s.phone||ow.phone||"").replace(/\D/g,"");
+  const n=S.products.filter(p=>p.shop_id==s.id&&p.status=="en_attente").length;
+  sheet(`<h3>🏪 ${esc(s.name)}</h3><p class="mut">${SH[s.status]} · ${esc(s.city)}</p>
+  ${s.description?`<p style="margin-top:8px">${esc(s.description)}</p>`:""}
+  <div class="card" style="margin-top:12px"><small>Propriétaire</small><br><b>${esc(ow.name||"?")}</b><br><small>${esc(s.phone||ow.phone||"")}</small></div>
+  ${s.reject_reason?`<p class="mut">Motif : ${esc(s.reject_reason)}</p>`:""}
+  ${n?`<p class="mut">${n} produit(s) en attente de validation</p>`:""}
+  ${s.status!="approuvee"?'<button class="btn" id="a1">✅ Approuver la boutique</button>':'<button class="btn d" id="a3">Suspendre la boutique</button>'}
+  ${s.status=="en_attente"?'<button class="btn d" id="a2">Refuser</button>':""}
+  ${ph?`<div class="row" style="margin-top:10px;gap:8px"><a class="btn o" style="margin:0" href="tel:+${ph}">Appeler</a><a class="btn o" style="margin:0" target="_blank" rel="noopener" href="https://wa.me/${ph}">WhatsApp</a></div>`:""}`);
+  const setS=async(st,reason,msg)=>{
+    if(await run(sb.from("shops").update({status:st,reject_reason:reason}).eq("id",id),msg)){
+      if(st=="suspendue")await sb.from("products").update({active:false}).eq("shop_id",id);
+      closeSheet();refresh()}};
+  if($("#a1"))$("#a1").onclick=()=>setS("approuvee",null,"Boutique approuvée");
+  if($("#a2"))$("#a2").onclick=()=>{const r=prompt("Raison du refus (visible par le vendeur) :");if(r===null)return;setS("refusee",r.trim()||"Non conforme","Boutique refusée")};
+  if($("#a3"))$("#a3").onclick=()=>{if(confirm("Suspendre cette boutique ? Ses produits seront masqués."))setS("suspendue",null,"Boutique suspendue")};
+}
+
 /* ---------- Produits ---------- */
 function vProducts(){
   const cats=["all",...new Set(S.products.map(p=>p.section))];
-  const list=S.products.filter(p=>S.pfilter=="all"||p.section==S.pfilter);
+  const list=S.products.filter(p=>S.pfilter=="all"||(S.pfilter=="pending"?p.status=="en_attente":p.section==S.pfilter));
   $("#view").innerHTML=`<div class="top"><h1>Produits</h1><button class="sm" id="np">+ Ajouter</button></div>
-  <div class="chips">${[["all","Tous"],["neuf","Boutique neuve"],["occasion","Occasion"]].map(([k,v])=>`<button class="chip ${S.pfilter==k?"on":""}" data-f="${k}">${v}</button>`).join("")}</div>
-  ${list.length?list.map(p=>`<div class="card row" data-p="${p.id}" style="${p.active?"":"opacity:.5"}"><div class="thumb">${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:"📦"}</div><div class="sp"><b>${esc(p.name)}</b><br><small>${p.section=="neuf"?"Neuf":"Occasion"} · ${esc(p.category)} · stock ${p.stock}</small></div><span class="price">${money(p.price)}</span></div>`).join(""):'<div class="empty">Aucun produit. Appuie sur « + Ajouter ».</div>'}`;
+  <div class="chips">${[["all","Tous"],["pending","À valider"],["neuf","Boutique neuve"],["occasion","Occasion"]].map(([k,v])=>`<button class="chip ${S.pfilter==k?"on":""}" data-f="${k}">${v}</button>`).join("")}</div>
+  ${list.length?list.map(p=>`<div class="card row" data-p="${p.id}" style="${p.active?"":"opacity:.5"}"><div class="thumb">${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:"📦"}</div><div class="sp"><b>${esc(p.name)}</b><br><small>${p.section=="neuf"?"Neuf":"Occasion"} · ${esc(p.category)} · stock ${p.stock}${p.status=="en_attente"?" · ⏳ À valider":p.status=="refuse"?" · ❌ Refusé":""}${p.shop_id?" · 🏪 "+esc(shopName(p.shop_id)):""}</small></div><span class="price">${money(p.price)}</span></div>`).join(""):'<div class="empty">Aucun produit. Appuie sur « + Ajouter ».</div>'}`;
   $("#np").onclick=()=>productSheet();
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.pfilter=b.dataset.f;vProducts()});
   document.querySelectorAll("[data-p]").forEach(c=>c.onclick=()=>productSheet(c.dataset.p));
@@ -198,6 +241,7 @@ function productSheet(id){
   const p=id?S.products.find(x=>x.id==id):{name:"",price:"",section:"neuf",category:"",stock:1,description:"",image_url:"",active:true};
   let active=p.active,img=p.image_url,fid=p.telegram_file_id||null;
   sheet(`<h3>${id?"Modifier":"Nouveau"} produit</h3>
+  ${id&&p.status=="en_attente"?`<div class="card" style="border-color:var(--g);margin-top:10px"><b>⏳ À valider</b><br><small>Boutique : ${esc(shopName(p.shop_id))}</small><button class="btn" id="ap">✅ Approuver et publier</button><button class="btn d" id="rj">Refuser</button></div>`:""}
   <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px"></div></div></div>
   <label>Nom</label><input class="fld" id="n" value="${esc(p.name)}">
   <label>Prix (F)</label><input class="fld" id="pr" type="number" inputmode="numeric" value="${p.price}">
@@ -209,6 +253,8 @@ function productSheet(id){
   <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
   $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
   $("#pick").onclick=()=>$("#fi").click();
+  if($("#ap"))$("#ap").onclick=async()=>{if(await run(sb.from("products").update({status:"approuve",active:true,reject_reason:null}).eq("id",id),"Produit publié")){closeSheet();refresh()}};
+  if($("#rj"))$("#rj").onclick=async()=>{const r=prompt("Raison du refus (visible par le vendeur) :");if(r===null)return;if(await run(sb.from("products").update({status:"refuse",active:false,reject_reason:r.trim()||"Non conforme"}).eq("id",id),"Produit refusé")){closeSheet();refresh()}};
   $("#fi").onchange=async e=>{
     const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
     try{
@@ -233,7 +279,7 @@ function productSheet(id){
 /* ---------- Messages ---------- */
 function threads(){
   const m=new Map();
-  S.messages.forEach(x=>{const k=x.client_key||x.customer_id||x.customer_phone||x.customer_name||"?";if(!m.has(k))m.set(k,{k,name:x.customer_name||x.customer_phone||"Client",phone:x.customer_phone,cid:x.customer_id,ck:x.client_key,msgs:[]});const t=m.get(k);if(x.sender=="client"){t.name=x.customer_name||t.name;t.phone=x.customer_phone||t.phone}t.msgs.push(x)});
+  S.messages.forEach(x=>{const k=x.customer_id||x.client_key||x.customer_phone||x.customer_name||"?";if(!m.has(k))m.set(k,{k,name:x.customer_name||x.customer_phone||"Client",phone:x.customer_phone,cid:x.customer_id,ck:x.client_key,msgs:[]});const t=m.get(k);if(x.sender=="client"){t.name=x.customer_name||t.name;t.phone=x.customer_phone||t.phone}t.msgs.push(x)});
   return [...m.values()].sort((a,b)=>new Date(b.msgs.at(-1).created_at)-new Date(a.msgs.at(-1).created_at));
 }
 function vMsgs(){
@@ -254,38 +300,130 @@ async function threadView(){
   const ids=th.msgs.filter(x=>x.sender=="client"&&!x.is_read).map(x=>x.id);
   if(ids.length){await sb.from("messages").update({is_read:true}).in("id",ids);ids.forEach(i=>{S.messages.find(m=>m.id==i).is_read=true});S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;render_badges()}
 }
-function render_badges(){document.querySelectorAll("#nav .dot").forEach(d=>d.remove());const nb=S.orders.filter(o=>o.status=="nouvelle").length;const add=(t,n)=>{if(n>0)document.querySelector(`#nav [data-t=${t}]`).insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)};add("orders",nb);add("msgs",S.unread)}
+function render_badges(){document.querySelectorAll("#nav .dot").forEach(d=>d.remove());const nb=S.orders.filter(o=>o.status=="nouvelle").length;const add=(t,n)=>{if(n>0)document.querySelector(`#nav [data-t=${t}]`).insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)};add("orders",nb);add("msgs",S.unread);add("shops",pend())}
 
 /* ---------- Services ---------- */
 function vSvc(){
-  $("#view").innerHTML=`<div class="top"><h1>Services</h1></div><p class="mut" style="margin-bottom:12px">Pharmacie, immobilier, transport, travaux, colis, nourriture.</p>`+
+  $("#view").innerHTML=`<div class="top"><h1>Services</h1><button class="sm" id="nsv">+ Ajouter</button></div><p class="mut" style="margin-bottom:12px">Chaque service a sa page dans l'appli, avec ses produits. Touche un service pour le modifier.</p>
+  <div class="card row" id="bnr" style="cursor:pointer;border-color:var(--g)"><div class="thumb" style="background:var(--g)">🎞️</div><div class="sp"><b>Bannières de l'accueil</b><br><small>${(S.banners||[]).length} diapositive(s) qui défilent en haut de l'appli</small></div><span class="mut">›</span></div>`+
   S.services.map(s=>`<div class="card row" data-s="${s.id}" style="${s.active?"":"opacity:.5"}"><div class="thumb" style="background:var(--g)">${esc(s.icon||"🧰")}</div><div class="sp"><b>${esc(s.title)}</b><br><small>${S.items.filter(i=>i.service_id==s.id).length} élément(s)</small></div><span class="mut">›</span></div>`).join("");
   document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>serviceSheet(+c.dataset.s));
+  $("#nsv").onclick=()=>newServiceSheet();
+  $("#bnr").onclick=()=>{S.tab="banners";render();scrollTo(0,0)};
+}
+/* ---------- Bannières de l'accueil ---------- */
+function vBanners(){
+  $("#view").innerHTML=`<div class="top"><button class="sm o" id="bk">‹ Services</button><h1 style="font-size:19px">Bannières</h1><button class="sm" id="nb">+ Ajouter</button></div>
+  <p class="mut" style="margin-bottom:12px">Ce sont les diapositives qui défilent en haut de l'accueil, avec une photo et un texte. Touche une bannière pour la modifier.</p>`+
+  (S.banners.length?S.banners.map(b=>`<div class="card row" data-b="${b.id}" style="${b.active?"":"opacity:.5"}"><div class="thumb" style="width:72px">${b.image_url?`<img src="${esc(b.image_url)}">`:esc(b.emoji||"🎞️")}</div><div class="sp"><b>${esc(b.title)}</b><br><small>${esc(b.subtitle||"")}</small></div><span class="mut">›</span></div>`).join(""):'<div class="empty">Aucune bannière. Appuie sur « + Ajouter ».</div>');
+  $("#bk").onclick=()=>{S.tab="svc";render();scrollTo(0,0)};
+  $("#nb").onclick=()=>bannerSheet();
+  document.querySelectorAll("[data-b]").forEach(c=>c.onclick=()=>bannerSheet(+c.dataset.b));
+}
+function bannerSheet(id){
+  const b=id?S.banners.find(x=>x.id==id):{title:"",subtitle:"",emoji:"",button:"Découvrir",image_url:"",telegram_file_id:null,target:"",sort_order:(Math.max(0,...S.banners.map(x=>x.sort_order||0))+1),active:true};
+  let img=b.image_url||"",fid=b.telegram_file_id||null,active=b.active;
+  sheet(`<h3>${id?"Modifier":"Nouvelle"} bannière</h3>
+  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:96px;height:64px">${img?`<img src="${esc(img)}">`:esc(b.emoji||"📷")}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px">Photo large, de préférence en paysage</div></div></div>
+  <label>Titre (ex : Commandez un bon plat)</label><input class="fld" id="t" maxlength="60" value="${esc(b.title)}">
+  <label>Texte en dessous</label><input class="fld" id="s" maxlength="110" value="${esc(b.subtitle||"")}">
+  <label>Emoji (affiché s'il n'y a pas de photo)</label><input class="fld" id="e" value="${esc(b.emoji||"")}">
+  <label>Texte du bouton</label><input class="fld" id="bt" maxlength="24" value="${esc(b.button||"")}">
+  <label>Ouvre quelle page ?</label><select class="fld" id="tg"><option value="">Aucune</option>${S.services.map(s=>`<option value="${esc(s.slug)}" ${b.target==s.slug?"selected":""}>${esc(s.title)}</option>`).join("")}</select>
+  <label>Ordre d'affichage</label><input class="fld" id="so" type="number" inputmode="numeric" value="${b.sort_order||0}">
+  <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
+  <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
+  $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
+  $("#pick").onclick=()=>$("#fi").click();
+  $("#fi").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const fd=new FormData();fd.append("file",f);
+      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
+      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
+      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓";
+    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
+  };
+  $("#sv").onclick=async()=>{
+    const row={title:$("#t").value.trim(),subtitle:$("#s").value.trim()||null,emoji:$("#e").value.trim()||null,button:$("#bt").value.trim()||null,target:$("#tg").value||null,sort_order:+$("#so").value||0,image_url:img||null,telegram_file_id:fid,active};
+    if(!row.title)return toast("Entrez un titre");
+    if(await run(id?sb.from("banners").update(row).eq("id",id):sb.from("banners").insert(row),"Bannière enregistrée")){closeSheet();refresh()}
+  };
+  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer cette bannière ?")&&await run(sb.from("banners").delete().eq("id",id),"Supprimée")){closeSheet();refresh()}};
+}
+function newServiceSheet(){
+  sheet(`<h3>Nouveau service</h3>
+  <label>Titre</label><input class="fld" id="t" placeholder="Ex : Salon de coiffure">
+  <label>Description</label><input class="fld" id="d" placeholder="Ex : Coiffure et soins à domicile">
+  <label>Icône (emoji)</label><input class="fld" id="ic" placeholder="💈">
+  <label>Texte du bouton</label><input class="fld" id="cta" value="Commander">
+  <button class="btn" id="sv">Créer le service</button>`);
+  $("#sv").onclick=async()=>{
+    const title=$("#t").value.trim();if(!title)return toast("Entrez un titre");
+    const next=Math.max(0,...S.services.map(x=>x.sort_order||0))+1;
+    if(await run(sb.from("services").insert({slug:"s"+Date.now().toString(36),label:"Service",title,subtitle:$("#d").value.trim(),icon:$("#ic").value.trim()||"🧰",cta:$("#cta").value.trim()||"Commander",sort_order:next}),"Service créé")){closeSheet();refresh()}
+  };
 }
 function serviceSheet(id){
-  const s=S.services.find(x=>x.id==id);let active=s.active;
+  const s=S.services.find(x=>x.id==id);let active=s.active,img=s.image_url||"",fid=s.telegram_file_id||null;
   const its=S.items.filter(i=>i.service_id==id);
   sheet(`<h3>${esc(s.icon||"")} ${esc(s.title)}</h3>
+  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:esc(s.icon||"📷")}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Photo du service</button><div class="mut" id="up" style="margin-top:4px">Affichée dans le carré de l'appli</div></div></div>
   <label>Titre</label><input class="fld" id="t" value="${esc(s.title)}">
   <label>Description</label><input class="fld" id="d" value="${esc(s.subtitle||"")}">
   <label>Icône (emoji)</label><input class="fld" id="ic" value="${esc(s.icon||"")}">
   <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
   <button class="btn" id="sv">Enregistrer le service</button>
-  <h2>Éléments proposés</h2>
-  ${its.map(i=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="sp"><b>${esc(i.name)}</b><br><small>${esc(i.description||"")}</small></div><button class="sm o" data-e="${i.id}">Modifier</button></div>`).join("")||'<p class="mut">Aucun élément.</p>'}
-  <button class="btn o" id="ai">+ Ajouter un élément</button>`);
+  <h2>Produits du service</h2>
+  ${its.map(i=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="sp"><b>${esc(i.name)}</b><br><small>${esc(i.description||"")}${i.price?" · "+money(i.price):" · Sur devis"}</small></div><button class="sm o" data-e="${i.id}">Modifier</button></div>`).join("")||'<p class="mut">Aucun élément.</p>'}
+  <button class="btn o" id="ai">+ Ajouter un produit à ce service</button>
+  ${["neuf","occasion"].includes(s.slug)?"":'<button class="btn d" id="dsv">Supprimer ce service</button>'}`);
   $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
-  $("#sv").onclick=async()=>{if(await run(sb.from("services").update({title:$("#t").value.trim(),subtitle:$("#d").value.trim(),icon:$("#ic").value.trim(),active}).eq("id",id),"Service enregistré")){closeSheet();refresh()}};
+  $("#sv").onclick=async()=>{if(await run(sb.from("services").update({title:$("#t").value.trim(),subtitle:$("#d").value.trim(),icon:$("#ic").value.trim(),active,image_url:img||null,telegram_file_id:fid}).eq("id",id),"Service enregistré")){closeSheet();refresh()}};
   $("#ai").onclick=()=>itemSheet(id);
+  if($("#dsv"))$("#dsv").onclick=async()=>{if(confirm("Supprimer ce service et tous ses produits ?")&&await run(sb.from("services").delete().eq("id",id),"Service supprimé")){closeSheet();refresh()}};
+  $("#pick").onclick=()=>$("#fi").click();
+  $("#fi").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const fd=new FormData();fd.append("file",f);
+      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
+      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
+      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓ — pense à enregistrer le service";
+    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
+  };
   document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>itemSheet(id,+b.dataset.e));
 }
 function itemSheet(sid,iid){
-  const i=iid?S.items.find(x=>x.id==iid):{name:"",description:""};
+  const i=iid?S.items.find(x=>x.id==iid):{name:"",description:"",price:0,image_url:"",telegram_file_id:null};
+  let img=i.image_url||"",fid=i.telegram_file_id||null;
   sheet(`<h3>${iid?"Modifier":"Nouvel"} élément</h3>
-  <label>Nom</label><input class="fld" id="n" value="${esc(i.name)}"><label>Description</label><input class="fld" id="d" value="${esc(i.description||"")}">
+  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px"></div></div></div>
+  <label>Nom</label><input class="fld" id="n" value="${esc(i.name)}">
+  <label>Description</label><input class="fld" id="d" value="${esc(i.description||"")}">
+  <label>Prix (F) — laisse 0 pour « Sur devis »</label><input class="fld" id="pr" type="number" inputmode="numeric" value="${i.price||0}">
   <button class="btn" id="sv">Enregistrer</button>${iid?'<button class="btn d" id="dl">Supprimer</button>':""}<button class="btn o" id="bk">Retour</button>`);
   $("#bk").onclick=()=>serviceSheet(sid);
-  $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),description:$("#d").value.trim(),service_id:sid};if(!r.name)return toast("Entrez un nom");
+  $("#pick").onclick=()=>$("#fi").click();
+  $("#fi").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const fd=new FormData();fd.append("file",f);
+      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
+      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
+      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓";
+    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
+  };
+  $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),description:$("#d").value.trim(),price:Math.max(0,+$("#pr").value||0),image_url:img||null,telegram_file_id:fid,service_id:sid};if(!r.name)return toast("Entrez un nom");
     if(await run(iid?sb.from("service_items").update(r).eq("id",iid):sb.from("service_items").insert(r),"Enregistré")){await loadAll();serviceSheet(sid)}};
   if(iid)$("#dl").onclick=async()=>{if(confirm("Supprimer ?")&&await run(sb.from("service_items").delete().eq("id",iid),"Supprimé")){await loadAll();serviceSheet(sid)}};
 }
