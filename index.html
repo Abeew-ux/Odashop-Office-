@@ -115,7 +115,7 @@ async function start(){
   if(!data||!data.length){await sb.auth.signOut();return loginView("Ce compte n'a pas accès au Office.")}
   S.email=session.user.email;
   shell();await loadAll();render();
-  clearInterval(window._t);window._t=setInterval(()=>{if(!$("#sheet.show"))refresh()},30000);
+  clearInterval(window._t);window._t=setInterval(()=>{if(!$("#sheet.show")&&!(S.thread&&$("#mb")&&$("#mb").value))refresh()},30000);
 }
 
 /* ---------- Données ---------- */
@@ -233,7 +233,7 @@ function productSheet(id){
 /* ---------- Messages ---------- */
 function threads(){
   const m=new Map();
-  S.messages.forEach(x=>{const k=x.customer_id||x.customer_phone||x.customer_name||"?";if(!m.has(k))m.set(k,{k,name:x.customer_name||x.customer_phone||"Client",phone:x.customer_phone,cid:x.customer_id,msgs:[]});m.get(k).msgs.push(x)});
+  S.messages.forEach(x=>{const k=x.client_key||x.customer_id||x.customer_phone||x.customer_name||"?";if(!m.has(k))m.set(k,{k,name:x.customer_name||x.customer_phone||"Client",phone:x.customer_phone,cid:x.customer_id,ck:x.client_key,msgs:[]});const t=m.get(k);if(x.sender=="client"){t.name=x.customer_name||t.name;t.phone=x.customer_phone||t.phone}t.msgs.push(x)});
   return [...m.values()].sort((a,b)=>new Date(b.msgs.at(-1).created_at)-new Date(a.msgs.at(-1).created_at));
 }
 function vMsgs(){
@@ -250,7 +250,7 @@ async function threadView(){
   <div class="row" style="margin-top:12px;gap:8px"><input class="fld" id="mb" style="margin:0" placeholder="Votre réponse…"><button class="sm" id="sd" style="padding:13px 16px">Envoyer</button></div>`;
   $("#bk").onclick=()=>{S.thread=null;vMsgs()};
   $("#sd").onclick=async()=>{const b=$("#mb").value.trim();if(!b)return;
-    if(await run(sb.from("messages").insert({customer_id:th.cid,customer_name:th.name,customer_phone:th.phone,sender:"admin",body:b,is_read:true}))){await refresh()}};
+    if(await run(sb.from("messages").insert({client_key:th.ck||null,customer_id:th.cid,customer_name:th.name,customer_phone:th.phone,sender:"admin",body:b,is_read:true}))){await refresh()}};
   const ids=th.msgs.filter(x=>x.sender=="client"&&!x.is_read).map(x=>x.id);
   if(ids.length){await sb.from("messages").update({is_read:true}).in("id",ids);ids.forEach(i=>{S.messages.find(m=>m.id==i).is_read=true});S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;render_badges()}
 }
