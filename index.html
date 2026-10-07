@@ -2,111 +2,164 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="theme-color" content="#09090a">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ODA Shop Office</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#09090a;--card:#141416;--card2:#1b1b1e;--line:#2a2a2e;--txt:#f6f4ee;--mut:#9b9a93;--g:#e8b23a;--g2:#b8821a;--ok:#22c55e;--bad:#ef4444}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:#000;color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
-#app{max-width:520px;margin:auto;min-height:100vh;background:var(--bg);padding-bottom:90px;position:relative}
+:root{--bg:#f4f5f7;--side:#fff;--card:#fff;--card2:#f0f1f4;--line:#e3e5ea;--txt:#16181d;--mut:#6b7280;--g:#d9961a;--gt:#fff;--ok:#16a34a;--bad:#dc2626;--sh:0 1px 3px #0001}
+:root[data-theme=dark]{--bg:#0d0d0f;--side:#141416;--card:#161619;--card2:#1f1f23;--line:#2a2a2f;--txt:#f3f1ea;--mut:#9a9aa3;--g:#e8b23a;--gt:#111;--sh:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-input,select,textarea{font:inherit}
-header{position:sticky;top:0;z-index:20;background:rgba(9,9,10,.9);backdrop-filter:blur(14px);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--g2));color:#111;font-weight:900;font-size:9px;line-height:1;display:grid;place-items:center;text-align:center}
-header b{font-size:16px}header small{display:block;color:var(--g);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-header .sp{flex:1}
-.ib{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--g);color:var(--g);display:grid;place-items:center;font-size:16px}
-main{padding:14px 16px}
-h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin:18px 0 10px;font-weight:700}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.top h1{font-size:22px;letter-spacing:-.5px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
-.row{display:flex;align-items:center;gap:12px}
-.sp{flex:1}
-small,.mut{color:var(--mut);font-size:12.5px}
-.btn{display:block;width:100%;background:var(--g);color:#111;font-weight:800;border-radius:14px;padding:13px;text-align:center;font-size:15px;margin-top:12px;text-decoration:none}
-.btn.o{background:none;border:1.5px solid var(--g);color:var(--g)}
-.btn.d{background:none;border:1.5px solid var(--bad);color:var(--bad)}
-.sm{background:var(--g);color:#111;font-weight:700;font-size:12px;border-radius:10px;padding:8px 12px;text-decoration:none;white-space:nowrap}
-.sm.o{background:none;border:1px solid var(--line);color:var(--txt)}
-.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{white-space:nowrap;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;color:var(--mut)}
-.chip.on{border-color:var(--g);color:var(--g);background:#e8b23a14}
-.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#e8b23a22;color:var(--g)}
-.badge.livree{background:#22c55e22;color:var(--ok)}.badge.annulee{background:#ef444422;color:var(--bad)}
-.thumb{width:56px;height:56px;border-radius:14px;background:var(--card2);display:grid;place-items:center;font-size:24px;overflow:hidden;flex-shrink:0}
-.thumb img{width:100%;height:100%;object-fit:cover}
-.price{color:var(--g);font-weight:800}
-.fld{width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--txt);font-size:15px;margin-top:8px;outline:0}
+input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+#app{display:flex;min-height:100vh}
+aside{width:224px;background:var(--side);border-right:1px solid var(--line);padding:16px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--g);color:var(--gt);font-weight:900;font-size:9px;line-height:1;display:grid;place-items:center;text-align:center}
+.brand b{display:block;font-size:15px}.brand small{color:var(--g);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.nv{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--mut);font-weight:600;text-align:left;width:100%}
+.nv:hover{background:var(--card2)}
+.nv.on{background:var(--g);color:var(--gt)}
+.nv i{font-style:normal;width:20px;text-align:center}
+.nv .dot{margin-left:auto;background:var(--bad);color:#fff;border-radius:99px;font-size:11px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 6px}
+.nv.on .dot{background:#fff;color:var(--bad)}
+.spacer{flex:1}
+main{flex:1;min-width:0;padding:24px 32px 60px;max-width:1280px}
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.bar h1{font-size:24px;letter-spacing:-.5px;margin-right:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--sh)}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.kpi{cursor:pointer}.kpi b{display:block;font-size:30px;color:var(--g);line-height:1.1}.kpi span{color:var(--mut);font-size:13px}
+.kpi:hover{border-color:var(--g)}
+.btn{background:var(--g);color:var(--gt);font-weight:700;border-radius:10px;padding:9px 16px;text-decoration:none;display:inline-block;white-space:nowrap}
+.btn.o{background:none;border:1px solid var(--line);color:var(--txt)}
+.btn.o:hover{border-color:var(--g)}
+.btn.d{background:none;border:1px solid var(--bad);color:var(--bad)}
+.btn.s{padding:6px 11px;font-size:13px}
+.btn.full{width:100%;text-align:center;margin-top:12px}
+.fld{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:0;margin-top:5px}
 .fld:focus{border-color:var(--g)}
-label{display:block;font-size:12px;color:var(--mut);margin-top:12px}
+.srch{max-width:280px;margin:0}
+label{display:block;font-size:12px;color:var(--mut);margin-top:12px;font-weight:600}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--mut);font-weight:600;font-size:13px}
+.tab.on{background:var(--g);color:var(--gt);border-color:var(--g)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--sh)}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:11px 14px;background:var(--card2)}
+td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer}tbody tr:hover td{background:var(--card2)}
+.r{text-align:right}
+.mut,small{color:var(--mut);font-size:12.5px}
+.price{color:var(--g);font-weight:800;white-space:nowrap}
+.badge{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:#d9961a22;color:var(--g);white-space:nowrap}
+.badge.ok{background:#16a34a22;color:var(--ok)}.badge.bad{background:#dc262622;color:var(--bad)}
+.thumb{width:44px;height:44px;border-radius:10px;background:var(--card2);display:grid;place-items:center;font-size:20px;overflow:hidden;flex-shrink:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.row{display:flex;align-items:center;gap:12px}.sp{flex:1;min-width:0}
+.empty{text-align:center;color:var(--mut);padding:50px 0}
+.todo{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.todo:first-of-type{border-top:0}
+.tg{width:42px;height:24px;border-radius:99px;background:#9994;position:relative;transition:.2s;flex-shrink:0;cursor:pointer}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.tg.on{background:var(--g)}.tg.on::after{left:21px}
 .sw{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
-.tg{width:46px;height:26px;border-radius:99px;background:#333;position:relative;transition:.2s}
-.tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
-.tg.on{background:var(--g)}.tg.on::after{left:23px}
-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;background:rgba(16,16,18,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 4px 12px;z-index:30}
-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--mut);padding:5px 0;position:relative}
-nav button i{font-style:normal;font-size:21px}
-nav button.on{color:var(--g)}
-nav button.on::before{content:"";position:absolute;top:-9px;width:26px;height:3px;border-radius:3px;background:var(--g)}
-nav .dot{position:absolute;top:0;right:22%;background:var(--bad);color:#fff;border-radius:99px;font-size:10px;min-width:17px;height:17px;display:grid;place-items:center;padding:0 4px;font-weight:700}
-#ov{position:fixed;inset:0;background:#000a;z-index:50;opacity:0;pointer-events:none;transition:.25s}
-#ov.show{opacity:1;pointer-events:auto}
-#sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);width:100%;max-width:520px;max-height:90vh;overflow:auto;background:#121214;border-radius:26px 26px 0 0;border:1px solid var(--line);padding:10px 18px 28px;z-index:60;transition:.3s}
-#sheet.show{transform:translate(-50%,0)}
-.grab{width:42px;height:4px;border-radius:4px;background:#3a3a40;margin:4px auto 14px}
-#sheet h3{font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:70;pointer-events:none}
+#ov{position:fixed;inset:0;background:#0007;z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+#ov.show{display:flex}
+#dlg{background:var(--bg);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:22px 24px;position:relative}
+#dlg h3{font-size:20px;margin-bottom:2px;padding-right:30px}
+#x{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--card2);font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#16181d;color:#fff;padding:10px 18px;border-radius:10px;font-weight:600;opacity:0;transition:.3s;z-index:90;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
-.login{max-width:420px;margin:auto;padding:70px 24px;text-align:center}
-.login .logo{width:70px;height:70px;font-size:15px;margin:0 auto 18px;border-radius:20px}
-.login h1{font-size:26px;letter-spacing:-.6px}.login h1 span{color:var(--g)}
-.err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
-.bub{max-width:80%;padding:10px 14px;border-radius:18px;font-size:14px;margin-bottom:8px;white-space:pre-wrap}
-.bub.me{margin-left:auto;background:var(--g);color:#111;border-bottom-right-radius:4px}
+.login{max-width:380px;margin:12vh auto;padding:30px;text-align:center}
+.login .logo{width:60px;height:60px;font-size:13px;margin:0 auto 14px;border-radius:16px}
+.err{color:var(--bad);margin-top:10px;min-height:18px}
+.chat{display:grid;grid-template-columns:300px 1fr;gap:14px;height:calc(100vh - 130px);min-height:420px}
+.chat>div{overflow:auto}
+.th{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.th:hover,.th.on{background:var(--card2)}
+.bub{max-width:75%;padding:9px 14px;border-radius:16px;margin-bottom:8px;white-space:pre-wrap}
+.bub.me{margin-left:auto;background:var(--g);color:var(--gt);border-bottom-right-radius:4px}
 .bub.ot{background:var(--card2);border-bottom-left-radius:4px}
-.empty{text-align:center;color:var(--mut);padding:40px 0;font-size:14px}
-.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center}
-.stat b{display:block;font-size:20px;color:var(--g)}.stat small{font-size:11px}
+.sc{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.sc .card{cursor:pointer;padding:0;overflow:hidden}.sc .card:hover{border-color:var(--g)}
+.sc .pic{height:110px;background:var(--card2);display:grid;place-items:center;font-size:38px}
+.sc .pic img{width:100%;height:100%;object-fit:cover}
+.sc .bd{padding:12px}
+@media(max-width:800px){
+ #app{flex-direction:column}
+ aside{width:100%;height:auto;position:sticky;z-index:20;flex-direction:row;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line);gap:4px}
+ .brand,.spacer{display:none}
+ .nv{width:auto;white-space:nowrap;padding:8px 12px}
+ main{padding:16px 14px 50px}
+ .chat{grid-template-columns:1fr;height:auto}
+ table{display:block;overflow-x:auto}
+ .two{grid-template-columns:1fr}
+ #ov{align-items:flex-end;padding:0}#dlg{border-radius:18px 18px 0 0;max-width:none}
+}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div id="ov"></div><div id="sheet"></div><div class="toast" id="toast"></div>
+<div id="ov"><div id="dlg"></div></div><div class="toast" id="toast"></div>
 <script>
 const SB_URL="https://zssyuerclbjydkuooukk.supabase.co";
 const SB_KEY="sb_publishable_8JxMf66gzM7B9idXFtTSEg_ddXevxEf";
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"oda-office-auth",persistSession:true,autoRefreshToken:true}});
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money=n=>Number(n||0).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ")+" F";
+const money=n=>Number(n||0).toLocaleString("fr-FR").replace(/ | /g," ")+" F";
+const dt=d=>new Date(d).toLocaleString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
 const STAT={nouvelle:"Nouvelle",confirmee:"Confirmée",en_livraison:"En livraison",livree:"Livrée",annulee:"Annulée"};
-let S={tab:"orders",orders:[],products:[],messages:[],services:[],items:[],cities:[],settings:{},ofilter:"all",pfilter:"all",thread:null,unread:0};
+const SH={en_attente:"En attente",approuvee:"Approuvée",refusee:"Refusée",suspendue:"Suspendue"};
+const bcls=s=>["livree","approuvee","approuve"].includes(s)?"ok":["annulee","refusee","suspendue","refuse"].includes(s)?"bad":"";
+let S={videos:[],tab:"home",orders:[],products:[],messages:[],services:[],items:[],cities:[],settings:{},shops:[],customers:[],banners:[],ofilter:"all",pfilter:"all",sfilter:"all",vtab:"svc",q:"",thread:null,unread:0};
+try{const t=localStorage.getItem("oda_office_theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
+function toggleTheme(){const d=document.documentElement.dataset.theme=="dark"?"light":"dark";document.documentElement.dataset.theme=d;try{localStorage.setItem("oda_office_theme",d)}catch(e){}}
 
-function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
-function sheet(h){$("#sheet").innerHTML='<div class="grab"></div>'+h;$("#ov").classList.add("show");$("#sheet").classList.add("show")}
-function closeSheet(){$("#ov").classList.remove("show");$("#sheet").classList.remove("show")}
-$("#ov").onclick=closeSheet;
-async function run(p,okmsg){const {error}=await p;if(error){toast("Erreur : "+error.message);return false}if(okmsg)toast(okmsg);return true}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000)}
+function dlg(h){$("#dlg").innerHTML='<button id="x" aria-label="Fermer">✕</button>'+h;$("#ov").classList.add("show");$("#x").onclick=closeDlg}
+function closeDlg(){$("#ov").classList.remove("show")}
+$("#ov").onmousedown=e=>{if(e.target.id=="ov")closeDlg()};
+document.addEventListener("keydown",e=>{if(e.key=="Escape")closeDlg()});
+async function run(p,ok){const {error}=await p;if(error){toast("Erreur : "+error.message);return false}if(ok)toast(ok);return true}
+function tgl(id,get,set){$(id).onclick=e=>{set(!get());e.currentTarget.classList.toggle("on",get())}}
+
+/* photo (Telegram) */
+function photoBox(st,hint,w,h){return `<div class="row"><div class="thumb" id="pv" style="width:${w||72}px;height:${h||72}px">${st.img?`<img src="${esc(st.img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="btn o s" id="pick" type="button">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px">${hint||""}</div></div></div>`}
+function bindPhoto(st){
+  $("#pick").onclick=()=>$("#fi").click();
+  $("#fi").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const fd=new FormData();fd.append("file",f);
+      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
+      st.fid=j.file_id;st.img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(j.file_id);
+      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓ (pense à enregistrer)";
+    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
+  };
+}
 
 /* ---------- Connexion ---------- */
 function loginView(msg=""){
-  $("#app").innerHTML=`<div class="login"><div class="logo">ODA<br>SHOP</div><h1>ODA Shop <span>Office</span></h1><p class="mut" style="margin:6px 0 22px">Espace de gestion</p>
+  $("#app").innerHTML=`<div class="login card" style="margin-top:12vh"><div class="logo">ODA<br>SHOP</div><h1 style="font-size:22px">ODA Shop Office</h1><p class="mut" style="margin:4px 0 16px">Espace de gestion</p>
   <input class="fld" id="em" type="email" placeholder="Email" autocomplete="username">
   <input class="fld" id="pw" type="password" placeholder="Mot de passe" autocomplete="current-password">
-  <button class="btn" id="go">Se connecter</button><div class="err" id="er">${esc(msg)}</div></div>`;
+  <button class="btn full" id="go">Se connecter</button><div class="err" id="er">${esc(msg)}</div></div>`;
   const go=async()=>{
     $("#er").textContent="";$("#go").textContent="Connexion…";
-    const {data,error}=await sb.auth.signInWithPassword({email:$("#em").value.trim(),password:$("#pw").value});
+    const {error}=await sb.auth.signInWithPassword({email:$("#em").value.trim(),password:$("#pw").value});
     $("#go").textContent="Se connecter";
     if(error){$("#er").textContent="Email ou mot de passe incorrect.";return}
     start();
   };
-  $("#go").onclick=go;$("#pw").onkeydown=e=>{if(e.key=="Enter")go()};
+  $("#go").onclick=go;$("#pw").onkeydown=e=>{if(e.key=="Enter")go()};$("#em").onkeydown=e=>{if(e.key=="Enter")$("#pw").focus()};
 }
 async function start(){
   const {data:{session}}=await sb.auth.getSession();
@@ -115,13 +168,13 @@ async function start(){
   if(!data||!data.length){await sb.auth.signOut();return loginView("Ce compte n'a pas accès au Office.")}
   S.email=session.user.email;
   shell();await loadAll();render();
-  clearInterval(window._t);window._t=setInterval(()=>{if(!$("#sheet.show")&&!(S.thread&&$("#mb")&&$("#mb").value))refresh()},30000);
+  clearInterval(window._t);window._t=setInterval(()=>{if(!$("#ov.show")&&!($("#mb")&&$("#mb").value)&&document.activeElement.tagName!="INPUT")refresh()},30000);
 }
 
 /* ---------- Données ---------- */
 async function loadAll(){
-  const [o,p,m,s,i,c,st,sh,cu,bn]=await Promise.all([
-    sb.from("orders").select("*").order("created_at",{ascending:false}).limit(200),
+  const [o,p,m,s,i,c,st,sh,cu,bn,vd]=await Promise.all([
+    sb.from("orders").select("*").order("created_at",{ascending:false}).limit(300),
     sb.from("products").select("*").order("created_at",{ascending:false}),
     sb.from("messages").select("*").order("created_at",{ascending:true}).limit(1000),
     sb.from("services").select("*").order("sort_order"),
@@ -130,7 +183,9 @@ async function loadAll(){
     sb.from("settings").select("*"),
     sb.from("shops").select("*").order("created_at",{ascending:false}),
     sb.from("customers").select("id,name,phone"),
-    sb.from("banners").select("*").order("sort_order")]);
+    sb.from("banners").select("*").order("sort_order"),
+    sb.from("videos").select("*").order("created_at",{ascending:false}).limit(200)]);
+  S.videos=vd.data||[];
   S.shops=sh.data||[];S.customers=cu.data||[];S.banners=bn.data||[];
   S.orders=o.data||[];S.products=p.data||[];S.messages=m.data||[];S.services=s.data||[];S.items=i.data||[];S.cities=c.data||[];
   S.settings=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));
@@ -139,331 +194,316 @@ async function loadAll(){
 async function refresh(){await loadAll();render()}
 
 /* ---------- Structure ---------- */
+const NAV=[["home","🏠","Accueil"],["orders","🧾","Commandes"],["products","🛍️","Produits"],["shops","🏪","Boutiques"],["videos","🎬","Vidéos"],["msgs","💬","Messages"],["vit","🎨","Vitrine"],["set","⚙️","Réglages"]];
+const nNew=()=>S.orders.filter(o=>o.status=="nouvelle").length;
+const pP=()=>S.products.filter(p=>p.status=="en_attente").length;
+const pV=()=>S.videos.filter(v=>v.status=="en_attente").length;
+const pS=()=>S.shops.filter(s=>s.status=="en_attente").length;
 function shell(){
-  $("#app").innerHTML=`<header><div class="logo">ODA<br>SHOP</div><div><small>Office</small><b>ODA Shop</b></div><div class="sp"></div><button class="ib" id="rf" aria-label="Actualiser">⟳</button></header>
-  <main id="view"></main>
-  <nav id="nav">
-   <button data-t="orders"><i>🧾</i>Commandes</button>
-   <button data-t="products"><i>🛍️</i>Produits</button>
-   <button data-t="shops"><i>🏪</i>Boutiques</button>
-   <button data-t="msgs"><i>💬</i>Messages</button>
-   <button data-t="svc"><i>🧰</i>Services</button>
-   <button data-t="set"><i>⚙️</i>Réglages</button>
-  </nav>`;
+  $("#app").innerHTML=`<aside><div class="brand"><div class="logo">ODA<br>SHOP</div><div><small>Office</small><b>ODA Shop</b></div></div>
+  ${NAV.map(n=>`<button class="nv" data-t="${n[0]}"><i>${n[1]}</i>${n[2]}</button>`).join("")}
+  <div class="spacer"></div>
+  <button class="nv" id="th"><i>🌓</i>Thème</button><button class="nv" id="rf"><i>⟳</i>Actualiser</button></aside><main id="view"></main>`;
   $("#rf").onclick=async()=>{await refresh();toast("Actualisé")};
-  document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;S.thread=null;render();scrollTo(0,0)});
+  $("#th").onclick=toggleTheme;
+  document.querySelectorAll(".nv[data-t]").forEach(b=>b.onclick=()=>go(b.dataset.t));
 }
+function go(t,opt={}){S.tab=t;S.thread=opt.thread||null;S.q="";if(opt.of)S.ofilter=opt.of;if(opt.pf)S.pfilter=opt.pf;if(opt.sf)S.sfilter=opt.sf;render();scrollTo(0,0)}
 function render(){
-  document.querySelectorAll("#nav button").forEach(b=>{b.classList.toggle("on",b.dataset.t==S.tab);const d=b.querySelector(".dot");if(d)d.remove()});
-  const nb=S.orders.filter(o=>o.status=="nouvelle").length;
-  const add=(t,n)=>{if(n>0){const b=document.querySelector(`#nav [data-t=${t}]`);b.insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)}};
-  add("orders",nb);add("msgs",S.unread);add("shops",pend());
-  ({orders:vOrders,products:vProducts,shops:vShops,banners:vBanners,msgs:vMsgs,svc:vSvc,set:vSet})[S.tab]();
+  const bd={orders:nNew(),products:pP(),shops:pS(),videos:pV(),msgs:S.unread};
+  document.querySelectorAll(".nv[data-t]").forEach(b=>{b.classList.toggle("on",b.dataset.t==S.tab);const d=b.querySelector(".dot");if(d)d.remove();const n=bd[b.dataset.t];if(n>0)b.insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)});
+  ({home:vHome,orders:vOrders,products:vProducts,shops:vShops,videos:vVideos,msgs:vMsgs,vit:vVit,set:vSet})[S.tab]();
+}
+function searchBox(ph){return `<input class="fld srch" id="q" placeholder="${ph}" value="${esc(S.q)}">`}
+function bindSearch(fn){const q=$("#q");q.oninput=()=>{S.q=q.value;const p=q.selectionStart;fn();const n=$("#q");n.focus();n.setSelectionRange(p,p)}}
+function tabs(list,cur,attr){return `<div class="tabs">${list.map(([k,v])=>`<button class="tab ${cur==k?"on":""}" data-${attr}="${k}">${v}</button>`).join("")}</div>`}
+
+/* ---------- Accueil ---------- */
+function vHome(){
+  const today=new Date().toDateString();
+  const td=S.orders.filter(o=>new Date(o.created_at).toDateString()==today&&o.status!="annulee");
+  const news=S.orders.filter(o=>o.status=="nouvelle").slice(0,5);
+  const pp=S.products.filter(p=>p.status=="en_attente").slice(0,5);
+  const sp=S.shops.filter(s=>s.status=="en_attente").slice(0,5);
+  const pvd=S.videos.filter(v=>v.status=="en_attente").slice(0,5);
+  const un=threads().filter(t=>t.msgs.some(y=>y.sender=="client"&&!y.is_read)).slice(0,5);
+  const none=!pvd.length&&!news.length&&!pp.length&&!sp.length&&!un.length;
+  $("#view").innerHTML=`<div class="bar"><h1>Bonjour 👋</h1><span class="mut">${new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</span></div>
+  <div class="grid g4" style="margin-bottom:18px">
+   <div class="card kpi" data-go="orders" data-of="nouvelle"><b>${nNew()}</b><span>Nouvelles commandes</span></div>
+   <div class="card kpi" data-go="products" data-pf="pending"><b>${pP()}</b><span>Produits à valider</span></div>
+   <div class="card kpi" data-go="msgs"><b>${S.unread}</b><span>Messages non lus</span></div>
+   <div class="card kpi" data-go="orders"><b>${money(td.reduce((a,o)=>a+o.total,0))}</b><span>${td.length} commande(s) aujourd'hui</span></div>
+  </div>
+  <div class="card"><h3 style="margin-bottom:6px">À faire</h3>
+  ${none?'<div class="empty" style="padding:24px">✅ Rien en attente. Tout est à jour.</div>':""}
+  ${news.map(o=>`<div class="todo" data-o="${o.id}"><span class="badge">Commande</span><div class="sp"><b>#${o.id} · ${esc(o.customer_name)}</b> <small>${esc(o.city)} · ${dt(o.created_at)}</small></div><span class="price">${money(o.total)}</span></div>`).join("")}
+  ${pp.map(p=>`<div class="todo" data-p="${p.id}"><span class="badge">Produit</span><div class="sp"><b>${esc(p.name)}</b> <small>${esc(shopName(p.shop_id))}</small></div><span class="price">${money(p.price)}</span></div>`).join("")}
+  ${sp.map(s=>`<div class="todo" data-s="${s.id}"><span class="badge">Boutique</span><div class="sp"><b>${esc(s.name)}</b> <small>${esc(s.city||"")}</small></div></div>`).join("")}
+  ${pvd.map(v=>`<div class="todo" data-vd="${v.id}"><span class="badge">Vidéo</span><div class="sp"><b>${esc(v.shop_name||"")}</b> <small>${esc((v.caption||"").slice(0,50))}</small></div></div>`).join("")}
+  ${un.map(t=>`<div class="todo" data-k="${esc(t.k)}"><span class="badge">Message</span><div class="sp"><b>${esc(t.name)}</b> <small>${esc(t.msgs.at(-1).body.slice(0,60))}</small></div></div>`).join("")}
+  </div>`;
+  document.querySelectorAll("[data-go]").forEach(c=>c.onclick=()=>go(c.dataset.go,{of:c.dataset.of,pf:c.dataset.pf}));
+  document.querySelectorAll("[data-o]").forEach(c=>c.onclick=()=>orderDlg(+c.dataset.o));
+  document.querySelectorAll("[data-p]").forEach(c=>c.onclick=()=>productDlg(c.dataset.p));
+  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>shopDlg(c.dataset.s));
+  document.querySelectorAll("[data-vd]").forEach(c=>c.onclick=()=>videoDlg(c.dataset.vd));
+  document.querySelectorAll("[data-k]").forEach(c=>c.onclick=()=>go("msgs",{thread:c.dataset.k}));
 }
 
 /* ---------- Commandes ---------- */
 function vOrders(){
-  const today=new Date().toDateString();
-  const td=S.orders.filter(o=>new Date(o.created_at).toDateString()==today);
-  const list=S.orders.filter(o=>S.ofilter=="all"||o.status==S.ofilter);
-  $("#view").innerHTML=`<div class="top"><h1>Commandes</h1></div>
-  <div class="stat"><div><b>${S.orders.filter(o=>o.status=="nouvelle").length}</b><small>Nouvelles</small></div><div><b>${td.length}</b><small>Aujourd'hui</small></div><div><b>${money(td.filter(o=>o.status!="annulee").reduce((a,o)=>a+o.total,0)).replace(" F","")}</b><small>F du jour</small></div></div>
-  <div class="chips">${["all",...Object.keys(STAT)].map(k=>`<button class="chip ${S.ofilter==k?"on":""}" data-f="${k}">${k=="all"?"Toutes":STAT[k]}</button>`).join("")}</div>
-  ${list.length?list.map(o=>`<div class="card" data-o="${o.id}"><div class="row"><b>#${o.id} · ${esc(o.customer_name)}</b><span class="sp"></span><span class="badge ${o.status}">${STAT[o.status]}</span></div>
-   <small>${new Date(o.created_at).toLocaleString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})} · ${esc(o.city)} · ${esc(o.kind)}</small>
-   <div class="row" style="margin-top:6px"><span class="mut sp">${(o.items||[]).length} article(s)</span><span class="price">${money(o.total)}</span></div></div>`).join(""):'<div class="empty">Aucune commande pour le moment.</div>'}`;
+  const q=S.q.toLowerCase();
+  const list=S.orders.filter(o=>(S.ofilter=="all"||o.status==S.ofilter)&&(!q||[o.id,o.customer_name,o.customer_phone,o.city,o.kind].join(" ").toLowerCase().includes(q)));
+  $("#view").innerHTML=`<div class="bar"><h1>Commandes</h1>${searchBox("Rechercher (nom, tél, n°…)")}</div>
+  ${tabs([["all","Toutes"],...Object.entries(STAT)],S.ofilter,"f")}
+  ${list.length?`<table><thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Ville</th><th>Type</th><th class="r">Total</th><th>Statut</th></tr></thead><tbody>
+  ${list.map(o=>`<tr data-o="${o.id}"><td><b>#${o.id}</b></td><td>${dt(o.created_at)}</td><td>${esc(o.customer_name)}<br><small>${esc(o.customer_phone||"")}</small></td><td>${esc(o.city)}</td><td>${esc(o.kind)}</td><td class="r price">${money(o.total)}</td><td><span class="badge ${bcls(o.status)}">${STAT[o.status]}</span></td></tr>`).join("")}</tbody></table>`:'<div class="empty">Aucune commande.</div>'}`;
+  bindSearch(vOrders);
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.ofilter=b.dataset.f;vOrders()});
-  document.querySelectorAll("[data-o]").forEach(c=>c.onclick=()=>orderSheet(+c.dataset.o));
+  document.querySelectorAll("[data-o]").forEach(c=>c.onclick=()=>orderDlg(+c.dataset.o));
 }
-function orderSheet(id){
+function orderDlg(id){
   const o=S.orders.find(x=>x.id==id);if(!o)return;
   const ph=(o.customer_phone||"").replace(/\D/g,"");
-  sheet(`<h3>Commande #${o.id}</h3><p class="mut">${esc(o.customer_name)} · ${esc(o.city)}${o.address?" · "+esc(o.address):""}</p>
-  ${(o.items||[]).map(i=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><span class="sp">${esc(i.n||i.name)}</span><span class="price">${esc(i.p||i.price||"")}</span></div>`).join("")}
-  <div class="row" style="margin-top:12px"><b class="sp">Total</b><span class="price">${money(o.total)}</span></div>
+  dlg(`<h3>Commande #${o.id}</h3><p class="mut">${dt(o.created_at)} · ${esc(o.customer_name)} · ${esc(o.city)}${o.address?" · "+esc(o.address):""}</p>
+  <div style="margin-top:10px">${(o.items||[]).map(i=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span class="sp">${esc(i.n||i.name)}${i.q>1?" × "+i.q:""}</span><span class="price">${esc(i.p||i.price||"")}</span></div>`).join("")}</div>
+  <div class="row" style="margin-top:12px"><b class="sp">Total</b><span class="price" style="font-size:18px">${money(o.total)}</span></div>
   ${o.note?`<p class="mut" style="margin-top:8px">Note : ${esc(o.note)}</p>`:""}
   <label>Statut</label><select class="fld" id="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${o.status==k?"selected":""}>${v}</option>`).join("")}</select>
-  <button class="btn" id="sv">Enregistrer</button>
-  ${ph?`<div class="row" style="margin-top:10px;gap:8px"><a class="btn o" style="margin:0" href="tel:+${ph}">Appeler</a><a class="btn o" style="margin:0" target="_blank" rel="noopener" href="https://wa.me/${ph}">WhatsApp</a></div>`:""}`);
-  $("#sv").onclick=async()=>{if(await run(sb.from("orders").update({status:$("#st").value}).eq("id",id),"Statut mis à jour")){closeSheet();refresh()}};
+  <div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap"><button class="btn" id="sv">Enregistrer</button>
+  ${ph?`<a class="btn o" href="tel:+${ph}">📞 Appeler</a><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${ph}">WhatsApp</a>`:""}</div>`);
+  $("#sv").onclick=async()=>{if(await run(sb.from("orders").update({status:$("#st").value}).eq("id",id),"Statut mis à jour")){closeDlg();refresh()}};
 }
 
-/* ---------- Boutiques (vendeurs) ---------- */
-const SH={en_attente:"En attente",approuvee:"Approuvée",refusee:"Refusée",suspendue:"Suspendue"};
-const shopName=id=>{const s=(S.shops||[]).find(x=>x.id==id);return s?s.name:""};
-const pend=()=>(S.shops||[]).filter(s=>s.status=="en_attente").length+(S.products||[]).filter(p=>p.status=="en_attente").length;
-function vShops(){
-  const f=S.sfilter||"all";
-  const list=S.shops.filter(s=>f=="all"||s.status==f);
-  const pp=S.products.filter(p=>p.status=="en_attente");
-  $("#view").innerHTML=`<div class="top"><h1>Boutiques</h1></div>
-  ${pp.length?`<div class="card" id="pp" style="border-color:var(--g);cursor:pointer"><b>⏳ ${pp.length} produit(s) à valider</b><br><small>Appuie pour les voir</small></div>`:""}
-  <div class="chips">${["all",...Object.keys(SH)].map(k=>`<button class="chip ${f==k?"on":""}" data-f="${k}">${k=="all"?"Toutes":SH[k]}${k=="en_attente"&&S.shops.some(s=>s.status=="en_attente")?" ("+S.shops.filter(s=>s.status=="en_attente").length+")":""}</button>`).join("")}</div>
-  ${list.length?list.map(s=>{const ow=S.customers.find(c=>c.id==s.owner_id)||{};return `<div class="card row" data-s="${s.id}"><div class="thumb">🏪</div><div class="sp"><b>${esc(s.name)}</b><br><small>${esc(ow.name||"?")} · ${esc(s.city)} · ${S.products.filter(p=>p.shop_id==s.id).length} produit(s)</small></div><span class="badge ${s.status=="approuvee"?"livree":(s.status=="refusee"||s.status=="suspendue")?"annulee":""}">${SH[s.status]}</span></div>`}).join(""):'<div class="empty">Aucune boutique pour le moment.</div>'}`;
-  if($("#pp"))$("#pp").onclick=()=>{S.tab="products";S.pfilter="pending";render()};
-  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.sfilter=b.dataset.f;vShops()});
-  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>shopSheet(c.dataset.s));
+/* ---------- Produits ---------- */
+const shopName=id=>{const s=S.shops.find(x=>x.id==id);return s?s.name:""};
+function vProducts(){
+  const q=S.q.toLowerCase(),f=S.pfilter;
+  const list=S.products.filter(p=>(f=="all"||(f=="pending"?p.status=="en_attente":p.section==f))&&(!q||[p.name,p.category,shopName(p.shop_id)].join(" ").toLowerCase().includes(q)));
+  $("#view").innerHTML=`<div class="bar"><h1>Produits</h1>${searchBox("Rechercher un produit…")}<button class="btn" id="np">+ Ajouter</button></div>
+  ${tabs([["all","Tous"],["pending","À valider"+(pP()?" ("+pP()+")":"")],["neuf","Boutique neuve"],["occasion","Occasion"]],f,"f")}
+  ${list.length?`<table><thead><tr><th></th><th>Produit</th><th>Section</th><th>Boutique</th><th>Stock</th><th class="r">Prix</th><th>État</th></tr></thead><tbody>
+  ${list.map(p=>`<tr data-p="${p.id}" style="${p.active?"":"opacity:.55"}"><td style="width:60px"><div class="thumb">${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:"📦"}</div></td><td><b>${esc(p.name)}</b><br><small>${esc(p.category)}</small></td><td>${p.section=="neuf"?"Neuf":"Occasion"}</td><td>${esc(shopName(p.shop_id))||"—"}</td><td>${p.stock}</td><td class="r price">${money(p.price)}</td><td><span class="badge ${bcls(p.status)}">${p.status=="en_attente"?"À valider":p.status=="refuse"?"Refusé":p.active?"En ligne":"Masqué"}</span></td></tr>`).join("")}</tbody></table>`:'<div class="empty">Aucun produit.</div>'}`;
+  $("#np").onclick=()=>productDlg();
+  bindSearch(vProducts);
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.pfilter=b.dataset.f;vProducts()});
+  document.querySelectorAll("[data-p]").forEach(c=>c.onclick=()=>productDlg(c.dataset.p));
 }
-function shopSheet(id){
+function productDlg(id){
+  const p=id?S.products.find(x=>x.id==id):{name:"",price:"",section:"neuf",category:"",stock:1,description:"",image_url:"",active:true};
+  let active=p.active;const ph={img:p.image_url,fid:p.telegram_file_id||null};
+  dlg(`<h3>${id?"Modifier":"Nouveau"} produit</h3>
+  ${id&&p.status=="en_attente"?`<div class="card" style="border-color:var(--g);margin:10px 0"><b>⏳ À valider</b> <small>Boutique : ${esc(shopName(p.shop_id))}</small><div class="row" style="margin-top:8px;gap:8px"><button class="btn" id="ap">✅ Approuver et publier</button><button class="btn d" id="rj">Refuser</button></div></div>`:""}
+  <div style="margin-top:10px">${photoBox(ph)}</div>
+  <label>Nom</label><input class="fld" id="n" value="${esc(p.name)}">
+  <div class="two"><div><label>Prix (F)</label><input class="fld" id="pr" type="number" value="${p.price}"></div><div><label>Stock</label><input class="fld" id="sk" type="number" value="${p.stock}"></div></div>
+  <div class="two"><div><label>Section</label><select class="fld" id="se"><option value="neuf" ${p.section=="neuf"?"selected":""}>Boutique neuve</option><option value="occasion" ${p.section=="occasion"?"selected":""}>Marché occasion</option></select></div>
+  <div><label>Catégorie</label><input class="fld" id="ca" list="cl" value="${esc(p.category)}"><datalist id="cl">${[...new Set(["Téléphones","Ordinateurs","Meubles","Électroménager","Véhicules","Vêtements",...S.products.map(x=>x.category)])].map(c=>`<option value="${esc(c)}">`).join("")}</datalist></div></div>
+  <label>Description</label><textarea class="fld" id="de" rows="3">${esc(p.description||"")}</textarea>
+  <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
+  <div class="row" style="margin-top:16px;gap:8px"><button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}</div>`);
+  tgl("#ac",()=>active,v=>active=v);bindPhoto(ph);
+  if($("#ap"))$("#ap").onclick=async()=>{if(await run(sb.from("products").update({status:"approuve",active:true,reject_reason:null}).eq("id",id),"Produit publié")){closeDlg();refresh()}};
+  if($("#rj"))$("#rj").onclick=async()=>{const r=prompt("Raison du refus (visible par le vendeur) :");if(r===null)return;if(await run(sb.from("products").update({status:"refuse",active:false,reject_reason:r.trim()||"Non conforme"}).eq("id",id),"Produit refusé")){closeDlg();refresh()}};
+  $("#sv").onclick=async()=>{
+    const row={name:$("#n").value.trim(),price:+$("#pr").value||0,section:$("#se").value,category:$("#ca").value.trim()||"Divers",stock:+$("#sk").value||0,description:$("#de").value.trim(),image_url:ph.img||null,telegram_file_id:ph.fid,active};
+    if(!row.name)return toast("Entrez un nom");
+    if(await run(id?sb.from("products").update(row).eq("id",id):sb.from("products").insert(row),"Produit enregistré")){closeDlg();refresh()}
+  };
+  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer ce produit ?")&&await run(sb.from("products").delete().eq("id",id),"Supprimé")){closeDlg();refresh()}};
+}
+
+/* ---------- Boutiques ---------- */
+function vShops(){
+  const f=S.sfilter,q=S.q.toLowerCase();
+  const list=S.shops.filter(s=>(f=="all"||s.status==f)&&(!q||[s.name,s.city].join(" ").toLowerCase().includes(q)));
+  $("#view").innerHTML=`<div class="bar"><h1>Boutiques</h1>${searchBox("Rechercher une boutique…")}</div>
+  ${pP()?`<div class="card" id="pp" style="border-color:var(--g);cursor:pointer;margin-bottom:14px"><b>⏳ ${pP()} produit(s) de vendeurs à valider</b> <span class="mut">— cliquer pour les voir</span></div>`:""}
+  ${tabs([["all","Toutes"],...Object.entries(SH)],f,"f")}
+  ${list.length?`<table><thead><tr><th>Boutique</th><th>Propriétaire</th><th>Ville</th><th>Produits</th><th>Statut</th></tr></thead><tbody>
+  ${list.map(s=>{const ow=S.customers.find(c=>c.id==s.owner_id)||{};return `<tr data-s="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(ow.name||"?")}<br><small>${esc(s.phone||ow.phone||"")}</small></td><td>${esc(s.city||"")}</td><td>${S.products.filter(p=>p.shop_id==s.id).length}</td><td><span class="badge ${bcls(s.status)}">${SH[s.status]}</span></td></tr>`}).join("")}</tbody></table>`:'<div class="empty">Aucune boutique.</div>'}`;
+  if($("#pp"))$("#pp").onclick=()=>go("products",{pf:"pending"});
+  bindSearch(vShops);
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.sfilter=b.dataset.f;vShops()});
+  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>shopDlg(c.dataset.s));
+}
+function shopDlg(id){
   const s=S.shops.find(x=>x.id==id);if(!s)return;
   const ow=S.customers.find(c=>c.id==s.owner_id)||{};
   const ph=String(s.phone||ow.phone||"").replace(/\D/g,"");
   const n=S.products.filter(p=>p.shop_id==s.id&&p.status=="en_attente").length;
-  sheet(`<h3>🏪 ${esc(s.name)}</h3><p class="mut">${SH[s.status]} · ${esc(s.city)}</p>
-  ${s.description?`<p style="margin-top:8px">${esc(s.description)}</p>`:""}
-  <div class="card" style="margin-top:12px"><small>Propriétaire</small><br><b>${esc(ow.name||"?")}</b><br><small>${esc(s.phone||ow.phone||"")}</small></div>
-  ${s.reject_reason?`<p class="mut">Motif : ${esc(s.reject_reason)}</p>`:""}
-  ${n?`<p class="mut">${n} produit(s) en attente de validation</p>`:""}
-  ${s.status!="approuvee"?'<button class="btn" id="a1">✅ Approuver la boutique</button>':'<button class="btn d" id="a3">Suspendre la boutique</button>'}
+  dlg(`<h3>🏪 ${esc(s.name)}</h3><p class="mut"><span class="badge ${bcls(s.status)}">${SH[s.status]}</span> ${esc(s.city||"")}</p>
+  ${s.description?`<p style="margin-top:10px">${esc(s.description)}</p>`:""}
+  <div class="card" style="margin-top:12px"><small>Propriétaire</small><br><b>${esc(ow.name||"?")}</b> <small>${esc(s.phone||ow.phone||"")}</small></div>
+  ${s.reject_reason?`<p class="mut" style="margin-top:8px">Motif : ${esc(s.reject_reason)}</p>`:""}
+  ${n?`<p class="mut" style="margin-top:8px">${n} produit(s) en attente de validation</p>`:""}
+  <div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">
+  ${s.status!="approuvee"?'<button class="btn" id="a1">✅ Approuver</button>':'<button class="btn d" id="a3">Suspendre</button>'}
   ${s.status=="en_attente"?'<button class="btn d" id="a2">Refuser</button>':""}
-  ${ph?`<div class="row" style="margin-top:10px;gap:8px"><a class="btn o" style="margin:0" href="tel:+${ph}">Appeler</a><a class="btn o" style="margin:0" target="_blank" rel="noopener" href="https://wa.me/${ph}">WhatsApp</a></div>`:""}`);
-  const setS=async(st,reason,msg)=>{
-    if(await run(sb.from("shops").update({status:st,reject_reason:reason}).eq("id",id),msg)){
-      if(st=="suspendue")await sb.from("products").update({active:false}).eq("shop_id",id);
-      closeSheet();refresh()}};
+  ${ph?`<a class="btn o" href="tel:+${ph}">📞 Appeler</a><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${ph}">WhatsApp</a>`:""}</div>`);
+  const setS=async(st,reason,msg)=>{if(await run(sb.from("shops").update({status:st,reject_reason:reason}).eq("id",id),msg)){if(st=="suspendue")await sb.from("products").update({active:false}).eq("shop_id",id);closeDlg();refresh()}};
   if($("#a1"))$("#a1").onclick=()=>setS("approuvee",null,"Boutique approuvée");
-  if($("#a2"))$("#a2").onclick=()=>{const r=prompt("Raison du refus (visible par le vendeur) :");if(r===null)return;setS("refusee",r.trim()||"Non conforme","Boutique refusée")};
+  if($("#a2"))$("#a2").onclick=()=>{const r=prompt("Raison du refus :");if(r===null)return;setS("refusee",r.trim()||"Non conforme","Boutique refusée")};
   if($("#a3"))$("#a3").onclick=()=>{if(confirm("Suspendre cette boutique ? Ses produits seront masqués."))setS("suspendue",null,"Boutique suspendue")};
 }
 
-/* ---------- Produits ---------- */
-function vProducts(){
-  const cats=["all",...new Set(S.products.map(p=>p.section))];
-  const list=S.products.filter(p=>S.pfilter=="all"||(S.pfilter=="pending"?p.status=="en_attente":p.section==S.pfilter));
-  $("#view").innerHTML=`<div class="top"><h1>Produits</h1><button class="sm" id="np">+ Ajouter</button></div>
-  <div class="chips">${[["all","Tous"],["pending","À valider"],["neuf","Boutique neuve"],["occasion","Occasion"]].map(([k,v])=>`<button class="chip ${S.pfilter==k?"on":""}" data-f="${k}">${v}</button>`).join("")}</div>
-  ${list.length?list.map(p=>`<div class="card row" data-p="${p.id}" style="${p.active?"":"opacity:.5"}"><div class="thumb">${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:"📦"}</div><div class="sp"><b>${esc(p.name)}</b><br><small>${p.section=="neuf"?"Neuf":"Occasion"} · ${esc(p.category)} · stock ${p.stock}${p.status=="en_attente"?" · ⏳ À valider":p.status=="refuse"?" · ❌ Refusé":""}${p.shop_id?" · 🏪 "+esc(shopName(p.shop_id)):""}</small></div><span class="price">${money(p.price)}</span></div>`).join(""):'<div class="empty">Aucun produit. Appuie sur « + Ajouter ».</div>'}`;
-  $("#np").onclick=()=>productSheet();
-  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.pfilter=b.dataset.f;vProducts()});
-  document.querySelectorAll("[data-p]").forEach(c=>c.onclick=()=>productSheet(c.dataset.p));
+/* ---------- Vidéos ---------- */
+function vVideos(){
+  const f=S.vf||"en_attente";
+  const list=S.videos.filter(v=>f=="all"||v.status==f);
+  $("#view").innerHTML=`<div class="bar"><h1>Vidéos</h1><span class="mut">Vidéos courtes publiées par les vendeurs</span></div>
+  ${tabs([["en_attente","À valider"+(pV()?" ("+pV()+")":"")],["approuve","Publiées"],["refuse","Refusées"],["all","Toutes"]],f,"vf")}
+  ${list.length?`<table><thead><tr><th>Boutique</th><th>Légende</th><th>Durée</th><th>Taille</th><th>Date</th><th>Statut</th></tr></thead><tbody>
+  ${list.map(v=>`<tr data-v="${v.id}"><td><b>${esc(v.shop_name||"ODA Shop")}</b></td><td>${esc((v.caption||"").slice(0,60))}</td><td>${v.duration}s</td><td>${(v.size_bytes/1048576).toFixed(1)} Mo</td><td>${dt(v.created_at)}</td><td><span class="badge ${bcls(v.status)}">${v.status=="en_attente"?"À valider":v.status=="approuve"?"Publiée":"Refusée"}</span></td></tr>`).join("")}</tbody></table>`:'<div class="empty">Aucune vidéo ici.</div>'}`;
+  document.querySelectorAll("[data-vf]").forEach(b=>b.onclick=()=>{S.vf=b.dataset.vf;vVideos()});
+  document.querySelectorAll("[data-v]").forEach(c=>c.onclick=()=>videoDlg(c.dataset.v));
 }
-function productSheet(id){
-  const p=id?S.products.find(x=>x.id==id):{name:"",price:"",section:"neuf",category:"",stock:1,description:"",image_url:"",active:true};
-  let active=p.active,img=p.image_url,fid=p.telegram_file_id||null;
-  sheet(`<h3>${id?"Modifier":"Nouveau"} produit</h3>
-  ${id&&p.status=="en_attente"?`<div class="card" style="border-color:var(--g);margin-top:10px"><b>⏳ À valider</b><br><small>Boutique : ${esc(shopName(p.shop_id))}</small><button class="btn" id="ap">✅ Approuver et publier</button><button class="btn d" id="rj">Refuser</button></div>`:""}
-  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px"></div></div></div>
-  <label>Nom</label><input class="fld" id="n" value="${esc(p.name)}">
-  <label>Prix (F)</label><input class="fld" id="pr" type="number" inputmode="numeric" value="${p.price}">
-  <label>Section</label><select class="fld" id="se"><option value="neuf" ${p.section=="neuf"?"selected":""}>Boutique neuve</option><option value="occasion" ${p.section=="occasion"?"selected":""}>Marché occasion</option></select>
-  <label>Catégorie</label><input class="fld" id="ca" list="cl" value="${esc(p.category)}" placeholder="Téléphones, Meubles…"><datalist id="cl">${[...new Set(["Téléphones","Ordinateurs","Meubles","Électroménager","Véhicules","Vêtements",...S.products.map(x=>x.category)])].map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
-  <label>Stock</label><input class="fld" id="sk" type="number" inputmode="numeric" value="${p.stock}">
-  <label>Description</label><textarea class="fld" id="de" rows="3">${esc(p.description||"")}</textarea>
-  <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
-  <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
-  $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
-  $("#pick").onclick=()=>$("#fi").click();
-  if($("#ap"))$("#ap").onclick=async()=>{if(await run(sb.from("products").update({status:"approuve",active:true,reject_reason:null}).eq("id",id),"Produit publié")){closeSheet();refresh()}};
-  if($("#rj"))$("#rj").onclick=async()=>{const r=prompt("Raison du refus (visible par le vendeur) :");if(r===null)return;if(await run(sb.from("products").update({status:"refuse",active:false,reject_reason:r.trim()||"Non conforme"}).eq("id",id),"Produit refusé")){closeSheet();refresh()}};
-  $("#fi").onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
-    try{
-      const {data:{session}}=await sb.auth.getSession();
-      const fd=new FormData();fd.append("file",f);
-      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
-      const j=await r.json().catch(()=>({}));
-      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
-      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
-      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓";
-    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
-  };
-  $("#sv").onclick=async()=>{
-    const row={name:$("#n").value.trim(),price:+$("#pr").value||0,section:$("#se").value,category:$("#ca").value.trim()||"Divers",stock:+$("#sk").value||0,description:$("#de").value.trim(),image_url:img||null,telegram_file_id:fid,active};
-    if(!row.name)return toast("Entrez un nom");
-    const q=id?sb.from("products").update(row).eq("id",id):sb.from("products").insert(row);
-    if(await run(q,"Produit enregistré")){closeSheet();refresh()}
-  };
-  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer ce produit ?")&&await run(sb.from("products").delete().eq("id",id),"Supprimé")){closeSheet();refresh()}};
+async function videoDlg(id){
+  const v=S.videos.find(x=>x.id==id);if(!v)return;
+  const {data:{session}}=await sb.auth.getSession();
+  const pr=S.products.find(p=>p.id==v.product_id);
+  dlg(`<h3>🎬 ${esc(v.shop_name||"ODA Shop")}</h3><p class="mut">${dt(v.created_at)} · ${v.duration}s · ${(v.size_bytes/1048576).toFixed(1)} Mo · <span class="badge ${bcls(v.status)}">${v.status}</span></p>
+  <video id="pvv" controls playsinline preload="metadata" style="width:100%;max-height:60vh;background:#000;border-radius:12px;margin-top:10px" src="${SB_URL}/functions/v1/tg-video?id=${encodeURIComponent(v.telegram_file_id)}&t=${encodeURIComponent(session.access_token)}"></video>
+  <p style="margin-top:10px">${esc(v.caption||"(sans légende)")}</p>${pr?`<p class="mut">Produit lié : ${esc(pr.name)} — ${money(pr.price)}</p>`:""}
+  ${v.reject_reason?`<p class="mut">Motif : ${esc(v.reject_reason)}</p>`:""}
+  <div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">
+  ${v.status!="approuve"?'<button class="btn" id="ap">✅ Approuver et publier</button>':'<button class="btn o" id="hd">Retirer de l\'appli</button>'}
+  ${v.status=="en_attente"?'<button class="btn d" id="rj">Refuser</button>':""}<button class="btn d" id="dl">Supprimer</button></div>`);
+  const up=async(row,m)=>{if(await run(sb.from("videos").update(row).eq("id",id),m)){closeDlg();refresh()}};
+  if($("#ap"))$("#ap").onclick=()=>up({status:"approuve",active:true,reject_reason:null},"Vidéo publiée");
+  if($("#hd"))$("#hd").onclick=()=>up({status:"refuse",active:false,reject_reason:"Retirée"},"Vidéo retirée");
+  if($("#rj"))$("#rj").onclick=()=>{const r=prompt("Raison du refus :");if(r===null)return;up({status:"refuse",active:false,reject_reason:r.trim()||"Non conforme"},"Vidéo refusée")};
+  $("#dl").onclick=async()=>{if(confirm("Supprimer cette vidéo ?")&&await run(sb.from("videos").delete().eq("id",id),"Supprimée")){closeDlg();refresh()}};
 }
-
-/* ---------- Messages ---------- */
+/* ---------- Messages (2 colonnes) ---------- */
 function threads(){
   const m=new Map();
   S.messages.forEach(x=>{const k=x.customer_id||x.client_key||x.customer_phone||x.customer_name||"?";if(!m.has(k))m.set(k,{k,name:x.customer_name||x.customer_phone||"Client",phone:x.customer_phone,cid:x.customer_id,ck:x.client_key,msgs:[]});const t=m.get(k);if(x.sender=="client"){t.name=x.customer_name||t.name;t.phone=x.customer_phone||t.phone}t.msgs.push(x)});
   return [...m.values()].sort((a,b)=>new Date(b.msgs.at(-1).created_at)-new Date(a.msgs.at(-1).created_at));
 }
 function vMsgs(){
-  if(S.thread)return threadView();
   const t=threads();
-  $("#view").innerHTML=`<div class="top"><h1>Messages</h1></div>`+(t.length?t.map(x=>{const last=x.msgs.at(-1),un=x.msgs.filter(y=>y.sender=="client"&&!y.is_read).length;
-   return `<div class="card row" data-k="${esc(x.k)}"><div class="thumb" style="border-radius:50%">👤</div><div class="sp"><b>${esc(x.name)}</b><br><small>${esc(last.body.slice(0,50))}</small></div>${un?`<span class="badge" style="background:var(--g);color:#111">${un}</span>`:""}</div>`}).join(""):'<div class="empty">Aucun message pour le moment.</div>');
+  if(!S.thread&&t.length&&innerWidth>800)S.thread=String(t[0].k);
+  const th=t.find(x=>String(x.k)==S.thread);
+  $("#view").innerHTML=`<div class="bar"><h1>Messages</h1><span class="mut">Les messages de plus de 7 jours sont supprimés automatiquement</span></div>
+  ${t.length?`<div class="chat"><div class="card" style="padding:0">${t.map(x=>{const last=x.msgs.at(-1),un=x.msgs.filter(y=>y.sender=="client"&&!y.is_read).length;return `<div class="th ${String(x.k)==S.thread?"on":""}" data-k="${esc(x.k)}"><div class="thumb" style="border-radius:50%">👤</div><div class="sp"><b>${esc(x.name)}</b><br><small>${esc(last.body.slice(0,40))}</small></div>${un?`<span class="badge" style="background:var(--g);color:var(--gt)">${un}</span>`:""}</div>`}).join("")}</div>
+  <div class="card" style="display:flex;flex-direction:column;padding:0">${th?`<div class="row" style="padding:12px 16px;border-bottom:1px solid var(--line)"><b class="sp">${esc(th.name)} <small>${esc(th.phone||"")}</small></b>${th.phone?`<a class="btn o s" target="_blank" rel="noopener" href="https://wa.me/${String(th.phone).replace(/\D/g,"")}">WhatsApp</a>`:""}</div>
+  <div id="msgs" style="flex:1;overflow:auto;padding:16px">${th.msgs.map(x=>`<div class="bub ${x.sender=="admin"?"me":"ot"}">${esc(x.body)}<br><small style="opacity:.7">${dt(x.created_at)}</small></div>`).join("")}</div>
+  <div class="row" style="padding:12px;border-top:1px solid var(--line)"><input class="fld" id="mb" style="margin:0" placeholder="Votre réponse… (Entrée pour envoyer)"><button class="btn" id="sd">Envoyer</button></div>`:'<div class="empty">Choisissez une conversation</div>'}</div></div>`:'<div class="empty">Aucun message pour le moment.</div>'}`;
   document.querySelectorAll("[data-k]").forEach(c=>c.onclick=()=>{S.thread=c.dataset.k;vMsgs()});
-}
-async function threadView(){
-  const th=threads().find(x=>String(x.k)==S.thread);if(!th){S.thread=null;return vMsgs()}
-  $("#view").innerHTML=`<div class="top"><button class="sm o" id="bk">‹ Retour</button><b>${esc(th.name)}</b><span></span></div>
-  <div>${th.msgs.map(x=>`<div class="bub ${x.sender=="admin"?"me":"ot"}">${esc(x.body)}</div>`).join("")}</div>
-  <div class="row" style="margin-top:12px;gap:8px"><input class="fld" id="mb" style="margin:0" placeholder="Votre réponse…"><button class="sm" id="sd" style="padding:13px 16px">Envoyer</button></div>`;
-  $("#bk").onclick=()=>{S.thread=null;vMsgs()};
-  $("#sd").onclick=async()=>{const b=$("#mb").value.trim();if(!b)return;
-    if(await run(sb.from("messages").insert({client_key:th.ck||null,customer_id:th.cid,customer_name:th.name,customer_phone:th.phone,sender:"admin",body:b,is_read:true}))){await refresh()}};
+  if(!th)return;
+  const box=$("#msgs");if(box)box.scrollTop=box.scrollHeight;
+  const send=async()=>{const b=$("#mb").value.trim();if(!b)return;
+    if(await run(sb.from("messages").insert({client_key:th.ck||null,customer_id:th.cid,customer_name:th.name,customer_phone:th.phone,sender:"admin",body:b,is_read:true}))){$("#mb").value="";await refresh()}};
+  $("#sd").onclick=send;$("#mb").onkeydown=e=>{if(e.key=="Enter")send()};
   const ids=th.msgs.filter(x=>x.sender=="client"&&!x.is_read).map(x=>x.id);
-  if(ids.length){await sb.from("messages").update({is_read:true}).in("id",ids);ids.forEach(i=>{S.messages.find(m=>m.id==i).is_read=true});S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;render_badges()}
+  if(ids.length)sb.from("messages").update({is_read:true}).in("id",ids).then(()=>{ids.forEach(i=>{const m=S.messages.find(m=>m.id==i);if(m)m.is_read=true});S.unread=S.messages.filter(x=>x.sender=="client"&&!x.is_read).length;const d=document.querySelector('.nv[data-t=msgs] .dot');if(d){S.unread?d.textContent=S.unread:d.remove()}});
 }
-function render_badges(){document.querySelectorAll("#nav .dot").forEach(d=>d.remove());const nb=S.orders.filter(o=>o.status=="nouvelle").length;const add=(t,n)=>{if(n>0)document.querySelector(`#nav [data-t=${t}]`).insertAdjacentHTML("beforeend",`<span class="dot">${n}</span>`)};add("orders",nb);add("msgs",S.unread);add("shops",pend())}
 
-/* ---------- Services ---------- */
-function vSvc(){
-  $("#view").innerHTML=`<div class="top"><h1>Services</h1><button class="sm" id="nsv">+ Ajouter</button></div><p class="mut" style="margin-bottom:12px">Chaque service a sa page dans l'appli, avec ses produits. Touche un service pour le modifier.</p>
-  <div class="card row" id="bnr" style="cursor:pointer;border-color:var(--g)"><div class="thumb" style="background:var(--g)">🎞️</div><div class="sp"><b>Bannières de l'accueil</b><br><small>${(S.banners||[]).length} diapositive(s) qui défilent en haut de l'appli</small></div><span class="mut">›</span></div>`+
-  S.services.map(s=>`<div class="card row" data-s="${s.id}" style="${s.active?"":"opacity:.5"}"><div class="thumb" style="background:var(--g)">${esc(s.icon||"🧰")}</div><div class="sp"><b>${esc(s.title)}</b><br><small>${S.items.filter(i=>i.service_id==s.id).length} élément(s)</small></div><span class="mut">›</span></div>`).join("");
-  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>serviceSheet(+c.dataset.s));
-  $("#nsv").onclick=()=>newServiceSheet();
-  $("#bnr").onclick=()=>{S.tab="banners";render();scrollTo(0,0)};
+/* ---------- Vitrine (services + bannières) ---------- */
+function vVit(){
+  const sv=S.vtab=="svc";
+  $("#view").innerHTML=`<div class="bar"><h1>Vitrine de l'appli</h1><button class="btn" id="add">+ ${sv?"Service":"Bannière"}</button></div>
+  ${tabs([["svc","Services"],["ban","Bannières (diaporama d'accueil)"]],S.vtab,"v")}
+  <p class="mut" style="margin-bottom:14px">${sv?"Chaque service a sa page dans l'appli avec ses produits. Cliquez sur un service pour le modifier.":"Les bannières défilent en haut de l'accueil, avec une photo et un texte."}</p>
+  <div class="sc">${sv?S.services.map(s=>`<div class="card" data-s="${s.id}" style="${s.active?"":"opacity:.5"}"><div class="pic">${s.image_url?`<img src="${esc(s.image_url)}">`:esc(s.icon||"🧰")}</div><div class="bd"><b>${esc(s.title)}</b><br><small>${S.items.filter(i=>i.service_id==s.id).length} produit(s)</small></div></div>`).join(""):
+   S.banners.map(b=>`<div class="card" data-b="${b.id}" style="${b.active?"":"opacity:.5"}"><div class="pic">${b.image_url?`<img src="${esc(b.image_url)}">`:esc(b.emoji||"🎞️")}</div><div class="bd"><b>${esc(b.title)}</b><br><small>${esc(b.subtitle||"")}</small></div></div>`).join("")}</div>
+  ${(sv?S.services:S.banners).length?"":'<div class="empty">Rien pour le moment.</div>'}`;
+  $("#add").onclick=()=>sv?newServiceDlg():bannerDlg();
+  document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{S.vtab=b.dataset.v;vVit()});
+  document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>serviceDlg(+c.dataset.s));
+  document.querySelectorAll("[data-b]").forEach(c=>c.onclick=()=>bannerDlg(+c.dataset.b));
 }
-/* ---------- Bannières de l'accueil ---------- */
-function vBanners(){
-  $("#view").innerHTML=`<div class="top"><button class="sm o" id="bk">‹ Services</button><h1 style="font-size:19px">Bannières</h1><button class="sm" id="nb">+ Ajouter</button></div>
-  <p class="mut" style="margin-bottom:12px">Ce sont les diapositives qui défilent en haut de l'accueil, avec une photo et un texte. Touche une bannière pour la modifier.</p>`+
-  (S.banners.length?S.banners.map(b=>`<div class="card row" data-b="${b.id}" style="${b.active?"":"opacity:.5"}"><div class="thumb" style="width:72px">${b.image_url?`<img src="${esc(b.image_url)}">`:esc(b.emoji||"🎞️")}</div><div class="sp"><b>${esc(b.title)}</b><br><small>${esc(b.subtitle||"")}</small></div><span class="mut">›</span></div>`).join(""):'<div class="empty">Aucune bannière. Appuie sur « + Ajouter ».</div>');
-  $("#bk").onclick=()=>{S.tab="svc";render();scrollTo(0,0)};
-  $("#nb").onclick=()=>bannerSheet();
-  document.querySelectorAll("[data-b]").forEach(c=>c.onclick=()=>bannerSheet(+c.dataset.b));
-}
-function bannerSheet(id){
+function bannerDlg(id){
   const b=id?S.banners.find(x=>x.id==id):{title:"",subtitle:"",emoji:"",button:"Découvrir",image_url:"",telegram_file_id:null,target:"",sort_order:(Math.max(0,...S.banners.map(x=>x.sort_order||0))+1),active:true};
-  let img=b.image_url||"",fid=b.telegram_file_id||null,active=b.active;
-  sheet(`<h3>${id?"Modifier":"Nouvelle"} bannière</h3>
-  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:96px;height:64px">${img?`<img src="${esc(img)}">`:esc(b.emoji||"📷")}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px">Photo large, de préférence en paysage</div></div></div>
+  let active=b.active;const ph={img:b.image_url||"",fid:b.telegram_file_id||null};
+  dlg(`<h3>${id?"Modifier":"Nouvelle"} bannière</h3><div style="margin-top:10px">${photoBox(ph,"Photo large, en paysage",110,70)}</div>
   <label>Titre (ex : Commandez un bon plat)</label><input class="fld" id="t" maxlength="60" value="${esc(b.title)}">
   <label>Texte en dessous</label><input class="fld" id="s" maxlength="110" value="${esc(b.subtitle||"")}">
-  <label>Emoji (affiché s'il n'y a pas de photo)</label><input class="fld" id="e" value="${esc(b.emoji||"")}">
-  <label>Texte du bouton</label><input class="fld" id="bt" maxlength="24" value="${esc(b.button||"")}">
-  <label>Ouvre quelle page ?</label><select class="fld" id="tg"><option value="">Aucune</option>${S.services.map(s=>`<option value="${esc(s.slug)}" ${b.target==s.slug?"selected":""}>${esc(s.title)}</option>`).join("")}</select>
-  <label>Ordre d'affichage</label><input class="fld" id="so" type="number" inputmode="numeric" value="${b.sort_order||0}">
+  <div class="two"><div><label>Texte du bouton</label><input class="fld" id="bt" maxlength="24" value="${esc(b.button||"")}"></div><div><label>Emoji (sans photo)</label><input class="fld" id="e" value="${esc(b.emoji||"")}"></div></div>
+  <div class="two"><div><label>Ouvre quelle page ?</label><select class="fld" id="tg"><option value="">Aucune</option>${S.services.map(s=>`<option value="${esc(s.slug)}" ${b.target==s.slug?"selected":""}>${esc(s.title)}</option>`).join("")}</select></div><div><label>Ordre</label><input class="fld" id="so" type="number" value="${b.sort_order||0}"></div></div>
   <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
-  <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
-  $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
-  $("#pick").onclick=()=>$("#fi").click();
-  $("#fi").onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
-    try{
-      const {data:{session}}=await sb.auth.getSession();
-      const fd=new FormData();fd.append("file",f);
-      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
-      const j=await r.json().catch(()=>({}));
-      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
-      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
-      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓";
-    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
-  };
+  <div class="row" style="margin-top:16px;gap:8px"><button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}</div>`);
+  tgl("#ac",()=>active,v=>active=v);bindPhoto(ph);
   $("#sv").onclick=async()=>{
-    const row={title:$("#t").value.trim(),subtitle:$("#s").value.trim()||null,emoji:$("#e").value.trim()||null,button:$("#bt").value.trim()||null,target:$("#tg").value||null,sort_order:+$("#so").value||0,image_url:img||null,telegram_file_id:fid,active};
+    const row={title:$("#t").value.trim(),subtitle:$("#s").value.trim()||null,emoji:$("#e").value.trim()||null,button:$("#bt").value.trim()||null,target:$("#tg").value||null,sort_order:+$("#so").value||0,image_url:ph.img||null,telegram_file_id:ph.fid,active};
     if(!row.title)return toast("Entrez un titre");
-    if(await run(id?sb.from("banners").update(row).eq("id",id):sb.from("banners").insert(row),"Bannière enregistrée")){closeSheet();refresh()}
-  };
-  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer cette bannière ?")&&await run(sb.from("banners").delete().eq("id",id),"Supprimée")){closeSheet();refresh()}};
+    if(await run(id?sb.from("banners").update(row).eq("id",id):sb.from("banners").insert(row),"Bannière enregistrée")){closeDlg();refresh()}};
+  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer cette bannière ?")&&await run(sb.from("banners").delete().eq("id",id),"Supprimée")){closeDlg();refresh()}};
 }
-function newServiceSheet(){
-  sheet(`<h3>Nouveau service</h3>
+function newServiceDlg(){
+  dlg(`<h3>Nouveau service</h3>
   <label>Titre</label><input class="fld" id="t" placeholder="Ex : Salon de coiffure">
   <label>Description</label><input class="fld" id="d" placeholder="Ex : Coiffure et soins à domicile">
-  <label>Icône (emoji)</label><input class="fld" id="ic" placeholder="💈">
-  <label>Texte du bouton</label><input class="fld" id="cta" value="Commander">
-  <button class="btn" id="sv">Créer le service</button>`);
+  <div class="two"><div><label>Icône (emoji)</label><input class="fld" id="ic" placeholder="💈"></div><div><label>Texte du bouton</label><input class="fld" id="cta" value="Commander"></div></div>
+  <button class="btn full" id="sv">Créer le service</button>`);
   $("#sv").onclick=async()=>{
     const title=$("#t").value.trim();if(!title)return toast("Entrez un titre");
     const next=Math.max(0,...S.services.map(x=>x.sort_order||0))+1;
-    if(await run(sb.from("services").insert({slug:"s"+Date.now().toString(36),label:"Service",title,subtitle:$("#d").value.trim(),icon:$("#ic").value.trim()||"🧰",cta:$("#cta").value.trim()||"Commander",sort_order:next}),"Service créé")){closeSheet();refresh()}
-  };
+    if(await run(sb.from("services").insert({slug:"s"+Date.now().toString(36),label:"Service",title,subtitle:$("#d").value.trim(),icon:$("#ic").value.trim()||"🧰",cta:$("#cta").value.trim()||"Commander",sort_order:next}),"Service créé")){await loadAll();render();const n=S.services.at(-1);n?serviceDlg(n.id):closeDlg()}};
 }
-function serviceSheet(id){
-  const s=S.services.find(x=>x.id==id);let active=s.active,img=s.image_url||"",fid=s.telegram_file_id||null;
+function serviceDlg(id){
+  const s=S.services.find(x=>x.id==id);if(!s)return;let active=s.active;const ph={img:s.image_url||"",fid:s.telegram_file_id||null};
   const its=S.items.filter(i=>i.service_id==id);
-  sheet(`<h3>${esc(s.icon||"")} ${esc(s.title)}</h3>
-  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:esc(s.icon||"📷")}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Photo du service</button><div class="mut" id="up" style="margin-top:4px">Affichée dans le carré de l'appli</div></div></div>
+  dlg(`<h3>${esc(s.icon||"")} ${esc(s.title)}</h3><div style="margin-top:10px">${photoBox(ph,"Affichée dans le carré de l'appli")}</div>
   <label>Titre</label><input class="fld" id="t" value="${esc(s.title)}">
-  <label>Description</label><input class="fld" id="d" value="${esc(s.subtitle||"")}">
-  <label>Icône (emoji)</label><input class="fld" id="ic" value="${esc(s.icon||"")}">
+  <div class="two"><div><label>Description</label><input class="fld" id="d" value="${esc(s.subtitle||"")}"></div><div><label>Icône (emoji)</label><input class="fld" id="ic" value="${esc(s.icon||"")}"></div></div>
   <div class="sw"><span>Visible dans l'appli</span><div class="tg ${active?"on":""}" id="ac"></div></div>
-  <button class="btn" id="sv">Enregistrer le service</button>
-  <h2>Produits du service</h2>
-  ${its.map(i=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="sp"><b>${esc(i.name)}</b><br><small>${esc(i.description||"")}${i.price?" · "+money(i.price):" · Sur devis"}</small></div><button class="sm o" data-e="${i.id}">Modifier</button></div>`).join("")||'<p class="mut">Aucun élément.</p>'}
-  <button class="btn o" id="ai">+ Ajouter un produit à ce service</button>
-  ${["neuf","occasion"].includes(s.slug)?"":'<button class="btn d" id="dsv">Supprimer ce service</button>'}`);
-  $("#ac").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
-  $("#sv").onclick=async()=>{if(await run(sb.from("services").update({title:$("#t").value.trim(),subtitle:$("#d").value.trim(),icon:$("#ic").value.trim(),active,image_url:img||null,telegram_file_id:fid}).eq("id",id),"Service enregistré")){closeSheet();refresh()}};
-  $("#ai").onclick=()=>itemSheet(id);
-  if($("#dsv"))$("#dsv").onclick=async()=>{if(confirm("Supprimer ce service et tous ses produits ?")&&await run(sb.from("services").delete().eq("id",id),"Service supprimé")){closeSheet();refresh()}};
-  $("#pick").onclick=()=>$("#fi").click();
-  $("#fi").onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
-    try{
-      const {data:{session}}=await sb.auth.getSession();
-      const fd=new FormData();fd.append("file",f);
-      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
-      const j=await r.json().catch(()=>({}));
-      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
-      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
-      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓ — pense à enregistrer le service";
-    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
-  };
-  document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>itemSheet(id,+b.dataset.e));
+  <div class="row" style="margin-top:14px;gap:8px"><button class="btn" id="sv">Enregistrer</button>${["neuf","occasion"].includes(s.slug)?"":'<button class="btn d" id="dsv">Supprimer</button>'}</div>
+  <h3 style="margin-top:22px;font-size:16px">Produits du service</h3>
+  ${its.map(i=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)"><div class="thumb">${i.image_url?`<img src="${esc(i.image_url)}">`:"📦"}</div><div class="sp"><b>${esc(i.name)}</b><br><small>${esc(i.description||"")}${i.price?" · "+money(i.price):" · Sur devis"}</small></div><button class="btn o s" data-e="${i.id}">Modifier</button></div>`).join("")||'<p class="mut" style="margin-top:6px">Aucun produit.</p>'}
+  <button class="btn o full" id="ai">+ Ajouter un produit à ce service</button>`);
+  tgl("#ac",()=>active,v=>active=v);bindPhoto(ph);
+  $("#sv").onclick=async()=>{if(await run(sb.from("services").update({title:$("#t").value.trim(),subtitle:$("#d").value.trim(),icon:$("#ic").value.trim(),active,image_url:ph.img||null,telegram_file_id:ph.fid}).eq("id",id),"Service enregistré")){closeDlg();refresh()}};
+  $("#ai").onclick=()=>itemDlg(id);
+  if($("#dsv"))$("#dsv").onclick=async()=>{if(confirm("Supprimer ce service et tous ses produits ?")&&await run(sb.from("services").delete().eq("id",id),"Service supprimé")){closeDlg();refresh()}};
+  document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>itemDlg(id,+b.dataset.e));
 }
-function itemSheet(sid,iid){
+function itemDlg(sid,iid){
   const i=iid?S.items.find(x=>x.id==iid):{name:"",description:"",price:0,image_url:"",telegram_file_id:null};
-  let img=i.image_url||"",fid=i.telegram_file_id||null;
-  sheet(`<h3>${iid?"Modifier":"Nouvel"} élément</h3>
-  <div class="row" style="margin-top:10px"><div class="thumb" id="pv" style="width:72px;height:72px">${img?`<img src="${esc(img)}">`:"📷"}</div><div class="sp"><input type="file" id="fi" accept="image/*" hidden><button class="sm o" id="pick">Choisir une photo</button><div class="mut" id="up" style="margin-top:4px"></div></div></div>
+  const ph={img:i.image_url||"",fid:i.telegram_file_id||null};
+  dlg(`<h3>${iid?"Modifier":"Nouveau"} produit du service</h3><div style="margin-top:10px">${photoBox(ph)}</div>
   <label>Nom</label><input class="fld" id="n" value="${esc(i.name)}">
   <label>Description</label><input class="fld" id="d" value="${esc(i.description||"")}">
-  <label>Prix (F) — laisse 0 pour « Sur devis »</label><input class="fld" id="pr" type="number" inputmode="numeric" value="${i.price||0}">
-  <button class="btn" id="sv">Enregistrer</button>${iid?'<button class="btn d" id="dl">Supprimer</button>':""}<button class="btn o" id="bk">Retour</button>`);
-  $("#bk").onclick=()=>serviceSheet(sid);
-  $("#pick").onclick=()=>$("#fi").click();
-  $("#fi").onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;$("#up").textContent="Envoi sur Telegram…";
-    try{
-      const {data:{session}}=await sb.auth.getSession();
-      const fd=new FormData();fd.append("file",f);
-      const r=await fetch(SB_URL+"/functions/v1/tg-upload",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SB_KEY},body:fd});
-      const j=await r.json().catch(()=>({}));
-      if(!r.ok||!j.file_id){$("#up").textContent="Erreur : "+(j.error||r.status);return}
-      fid=j.file_id;img=SB_URL+"/functions/v1/tg-image?id="+encodeURIComponent(fid);
-      $("#pv").innerHTML=`<img src="${URL.createObjectURL(f)}">`;$("#up").textContent="Photo envoyée ✓";
-    }catch(err){$("#up").textContent="Erreur réseau, réessayez"}
-  };
-  $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),description:$("#d").value.trim(),price:Math.max(0,+$("#pr").value||0),image_url:img||null,telegram_file_id:fid,service_id:sid};if(!r.name)return toast("Entrez un nom");
-    if(await run(iid?sb.from("service_items").update(r).eq("id",iid):sb.from("service_items").insert(r),"Enregistré")){await loadAll();serviceSheet(sid)}};
-  if(iid)$("#dl").onclick=async()=>{if(confirm("Supprimer ?")&&await run(sb.from("service_items").delete().eq("id",iid),"Supprimé")){await loadAll();serviceSheet(sid)}};
+  <label>Prix (F) — 0 pour « Sur devis »</label><input class="fld" id="pr" type="number" value="${i.price||0}">
+  <div class="row" style="margin-top:16px;gap:8px"><button class="btn" id="sv">Enregistrer</button>${iid?'<button class="btn d" id="dl">Supprimer</button>':""}<button class="btn o" id="bk">Retour</button></div>`);
+  bindPhoto(ph);$("#bk").onclick=()=>serviceDlg(sid);
+  $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),description:$("#d").value.trim(),price:Math.max(0,+$("#pr").value||0),image_url:ph.img||null,telegram_file_id:ph.fid,service_id:sid};if(!r.name)return toast("Entrez un nom");
+    if(await run(iid?sb.from("service_items").update(r).eq("id",iid):sb.from("service_items").insert(r),"Enregistré")){await loadAll();render();serviceDlg(sid)}};
+  if(iid)$("#dl").onclick=async()=>{if(confirm("Supprimer ?")&&await run(sb.from("service_items").delete().eq("id",iid),"Supprimé")){await loadAll();render();serviceDlg(sid)}};
 }
 
 /* ---------- Réglages ---------- */
 function vSet(){
-  $("#view").innerHTML=`<div class="top"><h1>Réglages</h1></div>
-  <div class="card"><b>Boutique</b>
+  $("#view").innerHTML=`<div class="bar"><h1>Réglages</h1></div><div class="grid g2">
+  <div class="card"><h3>Boutique</h3>
    <label>Numéro WhatsApp (format international, sans +)</label><input class="fld" id="wa" inputmode="tel" placeholder="227XXXXXXXX" value="${esc(S.settings.whatsapp_number||"")}">
    <label>Titre de l'accueil</label><input class="fld" id="ht" value="${esc(S.settings.hero_title||"")}">
-   <button class="btn" id="ss">Enregistrer</button></div>
-  <h2>Villes de livraison</h2>
-  ${S.cities.map(c=>`<div class="card row" style="${c.active?"":"opacity:.5"}"><div class="sp"><b>${esc(c.name)}</b><br><small>Frais : ${money(c.delivery_fee)}</small></div><button class="sm o" data-c="${c.id}">Modifier</button></div>`).join("")}
-  <button class="btn o" id="ac">+ Ajouter une ville</button>
-  <h2>Telegram</h2>
-  <div class="card"><b>Photos et alertes</b><p class="mut" style="margin-top:4px">Les photos des produits sont stockées sur Telegram. Les nouvelles commandes et les messages clients sont envoyés sur Telegram.</p></div>
-  <h2>Compte</h2>
-  <div class="card"><b>${esc(S.email)}</b>
+   <button class="btn full" id="ss">Enregistrer</button></div>
+  <div class="card"><h3>Mon compte</h3><p class="mut">${esc(S.email)}</p>
    <label>Nouveau mot de passe</label><input class="fld" id="np" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
-   <button class="btn o" id="cp">Changer le mot de passe</button></div>
-  <button class="btn d" id="lo">Se déconnecter</button>`;
-  $("#ss").onclick=async()=>{
-    const ok=await run(sb.from("settings").upsert([{key:"whatsapp_number",value:$("#wa").value.replace(/\D/g,""),is_public:true},{key:"hero_title",value:$("#ht").value.trim(),is_public:true}]),"Réglages enregistrés");if(ok)refresh()};
+   <div class="row" style="margin-top:12px;gap:8px"><button class="btn o" id="cp">Changer</button><button class="btn d" id="lo">Se déconnecter</button></div></div>
+  <div class="card"><div class="row"><h3 class="sp">Villes de livraison</h3><button class="btn s" id="ac">+ Ville</button></div>
+   ${S.cities.map(c=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line);${c.active?"":"opacity:.5"}"><div class="sp"><b>${esc(c.name)}</b> <small>Frais : ${money(c.delivery_fee)}</small></div><button class="btn o s" data-c="${c.id}">Modifier</button></div>`).join("")}</div>
+  <div class="card"><h3>Telegram</h3><p class="mut" style="margin-top:6px">Les photos sont stockées sur Telegram. Les nouvelles commandes, messages, boutiques et produits à valider sont envoyés dans le groupe Telegram.</p></div></div>`;
+  $("#ss").onclick=async()=>{const ok=await run(sb.from("settings").upsert([{key:"whatsapp_number",value:$("#wa").value.replace(/\D/g,""),is_public:true},{key:"hero_title",value:$("#ht").value.trim(),is_public:true}]),"Réglages enregistrés");if(ok)refresh()};
   $("#cp").onclick=async()=>{const v=$("#np").value;if(v.length<8)return toast("8 caractères minimum");if(await run(sb.auth.updateUser({password:v}),"Mot de passe changé"))$("#np").value=""};
   $("#lo").onclick=async()=>{clearInterval(window._t);await sb.auth.signOut();loginView()};
-  $("#ac").onclick=()=>citySheet();
-  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>citySheet(+b.dataset.c));
+  $("#ac").onclick=()=>cityDlg();
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>cityDlg(+b.dataset.c));
 }
-function citySheet(id){
+function cityDlg(id){
   const c=id?S.cities.find(x=>x.id==id):{name:"",delivery_fee:0,active:true};let active=c.active;
-  sheet(`<h3>${id?"Modifier":"Nouvelle"} ville</h3><label>Nom</label><input class="fld" id="n" value="${esc(c.name)}">
-  <label>Frais de livraison (F)</label><input class="fld" id="f" type="number" inputmode="numeric" value="${c.delivery_fee}">
+  dlg(`<h3>${id?"Modifier":"Nouvelle"} ville</h3><label>Nom</label><input class="fld" id="n" value="${esc(c.name)}">
+  <label>Frais de livraison (F)</label><input class="fld" id="f" type="number" value="${c.delivery_fee}">
   <div class="sw"><span>Active</span><div class="tg ${active?"on":""}" id="ac2"></div></div>
-  <button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}`);
-  $("#ac2").onclick=e=>{active=!active;e.target.classList.toggle("on",active)};
+  <div class="row" style="margin-top:16px;gap:8px"><button class="btn" id="sv">Enregistrer</button>${id?'<button class="btn d" id="dl">Supprimer</button>':""}</div>`);
+  tgl("#ac2",()=>active,v=>active=v);
   $("#sv").onclick=async()=>{const r={name:$("#n").value.trim(),delivery_fee:+$("#f").value||0,active};if(!r.name)return toast("Entrez un nom");
-    if(await run(id?sb.from("cities").update(r).eq("id",id):sb.from("cities").insert(r),"Ville enregistrée")){closeSheet();refresh()}};
-  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer cette ville ?")&&await run(sb.from("cities").delete().eq("id",id),"Supprimée")){closeSheet();refresh()}};
+    if(await run(id?sb.from("cities").update(r).eq("id",id):sb.from("cities").insert(r),"Ville enregistrée")){closeDlg();refresh()}};
+  if(id)$("#dl").onclick=async()=>{if(confirm("Supprimer cette ville ?")&&await run(sb.from("cities").delete().eq("id",id),"Supprimée")){closeDlg();refresh()}};
 }
-
 start();
 </script>
 </body>
